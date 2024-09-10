@@ -6,22 +6,12 @@ using Gandalan.IDAS.WebApi.DTO;
 public class ArtikelCommands : CommandsBase
 {
     [Command("list")]
-    public async Task GetList()
+    public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
         ArtikelWebRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.GetAllAsync()));
+        await dumpOutput(commonParams, await client.GetAllAsync());
     }
-
-    /*[Command("get")]
-    public async Task GetArtikel(
-        [Argument("kontakt", Description = "Kontakt-GUID")]
-        Guid kontakt)
-    {
-        var settings = await getSettings();
-        ArtikelWebRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.(kontakt)));
-    }*/
 
     [Command("put")]
     public async Task PutArtikel(
@@ -31,6 +21,6 @@ public class ArtikelCommands : CommandsBase
         var settings = await getSettings();
         ArtikelWebRoutinen client = new(settings);
         var artikel = JsonSerializer.Deserialize<KatalogArtikelDTO>(await File.ReadAllTextAsync(file));
-        Console.WriteLine(JsonSerializer.Serialize(await client.SaveArtikelAsync(artikel)));
+        await client.SaveArtikelAsync(artikel);
     }
 }

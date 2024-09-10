@@ -5,21 +5,23 @@ using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 public class gSQLCommands : CommandsBase
 {
     [Command("list")]
-    public async Task GetList()
+    public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
         IBOS1ImportRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.LadeBestellungenAsync()));
+        await dumpOutput(commonParams, await client.LadeBestellungenAsync());
     }
 
     [Command("get")]
     public async Task GetBeleg(
+        CommonParameters commonParams,
         [Argument("beleg", Description = "Beleg-GUID")]
         Guid beleg)
     {
         var settings = await getSettings();
         IBOS1ImportRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.GetgSQLBelegAsync(beleg)));
+        var paramsOverride = new CommonParameters { Format = "gsql", FileName = commonParams.FileName };
+        await dumpOutput(paramsOverride, await client.GetgSQLBelegAsync(beleg));
     }
 
     [Command("reset")]

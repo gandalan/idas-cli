@@ -6,21 +6,22 @@ using Gandalan.IDAS.WebApi.DTO;
 public class KontaktCommands : CommandsBase
 {
     [Command("list")]
-    public async Task GetList()
+    public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
         KontaktWebRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.GetKontakteAsync()));
+        await dumpOutput(commonParams, await client.GetKontakteAsync());
     }
 
     [Command("get")]
     public async Task GetKontakt(
+        CommonParameters commonParams,
         [Argument("kontakt", Description = "Kontakt-GUID")]
         Guid kontakt)
     {
         var settings = await getSettings();
         KontaktWebRoutinen client = new(settings);
-        Console.WriteLine(JsonSerializer.Serialize(await client.GetKontaktAsync(kontakt)));
+        await dumpOutput(commonParams, await client.GetKontaktAsync(kontakt));
     }
 
     [Command("put")]

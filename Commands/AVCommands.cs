@@ -13,11 +13,12 @@ public class AVCommands : CommandsBase
         AVWebRoutinen client = new(settings);
         var data = await client.GetAllBelegPositionenAVAsync(since ?? DateTime.Now.AddMonths(-1));
         var reduced = data.Select(avpo => new { avpo.Pcode, avpo.BelegPositionAVGuid, avpo.BelegGuid, avpo.BelegPositionGuid });
-        Console.WriteLine(JsonSerializer.Serialize(reduced));
+        await dumpOutput(commonParams, reduced);
     }
 
     [Command("get")]
     public async Task GetPos(
+        CommonParameters commonParams,
         [Argument("pos", Description = "AVPos-GUID or PCode")]
         string? pos)
     {
@@ -31,7 +32,8 @@ public class AVCommands : CommandsBase
         }
         var result = guid != Guid.Empty ? 
             await client.GetBelegPositionAVByIdAsync(guid) : 
-            (await client.GetBelegPositionAVByPCodeAsync(pos!)).FirstOrDefault();
-        Console.WriteLine(JsonSerializer.Serialize(result));
+            (await client.GetBelegPositionAVByPCodeAsync(pos!)).First();
+
+        await dumpOutput(commonParams, result);
     }
 }
