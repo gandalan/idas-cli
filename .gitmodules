@@ -1,0 +1,4 @@
+[submodule "idas-client-libs"]
+	path = idas-client-libs
+	url = https://github.com/gandalan/idas-client-libs.git
+	branch = master
