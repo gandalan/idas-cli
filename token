@@ -1,0 +1,395 @@
+{
+  "AppToken": "96d23907-4ea9-41bb-a221-d19af64c1371",
+  "Expires": "2024-09-17T09:19:18.3101317Z",
+  "Token": "2061510d-239e-4f4b-a0f8-3ce88b64aa02",
+  "Benutzer": {
+    "Rollen": [
+      {
+        "Berechtigungen": [
+          {
+            "Code": "Adressverwaltung",
+            "ErklaerungsText": "Zugriff auf Adressmodule",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Belege",
+            "ErklaerungsText": "Zugriff auf Belegmodule",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "BelegeStamm",
+            "ErklaerungsText": "Zugriff auf Belegstammdaten u. Beleggestaltung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ProduktionAV",
+            "ErklaerungsText": "Zugriff auf Produktions-Vorbereitung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ProduktionStamm",
+            "ErklaerungsText": "Zugriff auf Produktions-Stammdaten",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ProduktionSLK",
+            "ErklaerungsText": "Zugriff auf SLK-Modul",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Lager",
+            "ErklaerungsText": "Zugriff auf Lagerverwaltung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Statistik",
+            "ErklaerungsText": "Zugriff auf Statistik-Module",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Zeit",
+            "ErklaerungsText": "Zugriff auf Zeitverwaltung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ZeitStamm",
+            "ErklaerungsText": "Zugriff auf Vorgabezeiten f\u00FCr Zeitverwaltung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Touren",
+            "ErklaerungsText": "Zugriff auf Tourenplanung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "TourenStamm",
+            "ErklaerungsText": "Zugriff auf Adresszuordnung f\u00FCr Tourenplanung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Verteter",
+            "ErklaerungsText": "Zugriff auf Vertreterverwaltung",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "Bestellfix",
+            "ErklaerungsText": "Darf Bestellfix verwenden",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AdminTool",
+            "ErklaerungsText": "Zugriff auf Admin Tool",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AuthServer.UserAdmin",
+            "ErklaerungsText": "Darf Benutzer anlegen und verwalten",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AlleBelegeEinsehen",
+            "ErklaerungsText": "Sieht Belege von allen Usern",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AppAdmin",
+            "ErklaerungsText": "Kann App Benutzer verwalten",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ReportSchreiben",
+            "ErklaerungsText": "Kann Reports erstellenn und \u00E4ndern",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AddonInstall",
+            "ErklaerungsText": "Darf Addons installieren",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AddonAdmin",
+            "ErklaerungsText": "Ist globaler Addon-Admin (f\u00FCr alle Kunden)",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "Testrolle",
+        "Beschreibung": "Testrolle mit allen Rechten (only DEV)",
+        "RolleGuid": "09e314ef-338d-432d-a06a-61027b00ab0a"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "Adressverwaltung",
+            "ErklaerungsText": "Zugriff auf Adressmodule",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AlleBelegeEinsehen",
+            "ErklaerungsText": "Sieht Belege von allen Usern",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "ReportSchreiben",
+            "ErklaerungsText": "Kann Reports erstellenn und \u00E4ndern",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "IBOS-Benutzer",
+        "Beschreibung": "Standard IBOS3 Benutzer",
+        "RolleGuid": "155146bd-e4bb-43a7-b2e3-a480a68bcb48"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "P3.Arbeitsplatz",
+            "ErklaerungsText": "Darf P3 Arbeitsplatz-Frontend verwenden",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "P3-Benutzer",
+        "Beschreibung": "verwendet das P3 Arbeitsplatz-Frontend",
+        "RolleGuid": "d1d287aa-b675-46bb-a8b7-29b6bc511373"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "P3.Arbeitsplatz",
+            "ErklaerungsText": "Darf P3 Arbeitsplatz-Frontend verwenden",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "P3.Produzent",
+            "ErklaerungsText": "Darf P3-Produzenten-Frontend verwenden",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "P3-Produzenten-Benutzer",
+        "Beschreibung": "verwendet das P3-Produzenten-Frontend",
+        "RolleGuid": "e9fab168-0966-48b8-ac50-133b32ba39b0"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "AdminTool",
+            "ErklaerungsText": "Zugriff auf Admin Tool",
+            "Level": "Kein"
+          },
+          {
+            "Code": "AuthServer.UserAdmin",
+            "ErklaerungsText": "Darf Benutzer anlegen und verwalten",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "IBOS-Administrator",
+        "Beschreibung": "verwaltet IBOS-Einstellungen und -berechtigungen",
+        "RolleGuid": "26318789-f603-4afc-99f3-0f43512efa57"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "Adressverwaltung",
+            "ErklaerungsText": "Zugriff auf Adressmodule",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Belege",
+            "ErklaerungsText": "Zugriff auf Belegmodule",
+            "Level": "Kein"
+          },
+          {
+            "Code": "BelegeStamm",
+            "ErklaerungsText": "Zugriff auf Belegstammdaten u. Beleggestaltung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "ProduktionAV",
+            "ErklaerungsText": "Zugriff auf Produktions-Vorbereitung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "ProduktionStamm",
+            "ErklaerungsText": "Zugriff auf Produktions-Stammdaten",
+            "Level": "Kein"
+          },
+          {
+            "Code": "ProduktionSLK",
+            "ErklaerungsText": "Zugriff auf SLK-Modul",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Lager",
+            "ErklaerungsText": "Zugriff auf Lagerverwaltung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Statistik",
+            "ErklaerungsText": "Zugriff auf Statistik-Module",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Zeit",
+            "ErklaerungsText": "Zugriff auf Zeitverwaltung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "ZeitStamm",
+            "ErklaerungsText": "Zugriff auf Vorgabezeiten f\u00FCr Zeitverwaltung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Touren",
+            "ErklaerungsText": "Zugriff auf Tourenplanung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "TourenStamm",
+            "ErklaerungsText": "Zugriff auf Adresszuordnung f\u00FCr Tourenplanung",
+            "Level": "Kein"
+          },
+          {
+            "Code": "Verteter",
+            "ErklaerungsText": "Zugriff auf Vertreterverwaltung",
+            "Level": "Kein"
+          }
+        ],
+        "Name": "DongleNummer_399",
+        "Beschreibung": "Beinhaltet die Berechtigungen f\u00FCr Benutzer mit der Donglenummer 399",
+        "RolleGuid": "48b5df7b-bcab-4531-888e-8dd05df17842"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "Bestellfix",
+            "ErklaerungsText": "Darf Bestellfix verwenden",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "Bestellfix-Benutzer",
+        "Beschreibung": "verwendet Bestellfix in der Neher App",
+        "RolleGuid": "aca84b5e-9eb0-4ffd-ad67-3c58fbbc48ed"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "Bestellfix",
+            "ErklaerungsText": "Darf Bestellfix verwenden",
+            "Level": "Kein"
+          }
+        ],
+        "Name": "App-Benutzer",
+        "Beschreibung": "Neher App-Benutzer ohne Bestellfix",
+        "RolleGuid": "47ff7207-7c44-4ff7-b160-dad57a8e8ba0"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "AddonInstall",
+            "ErklaerungsText": "Darf Addons installieren",
+            "Level": "LesenUndSchreiben"
+          },
+          {
+            "Code": "AddonAdmin",
+            "ErklaerungsText": "Ist globaler Addon-Admin (f\u00FCr alle Kunden)",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "Addon-Admin",
+        "Beschreibung": "Adminrolle, der Addons zur Installation freigeben darf",
+        "RolleGuid": "83247937-f053-4ca2-85d9-8c8713fa99ca"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "AuthServer.UserAdmin",
+            "ErklaerungsText": "Darf Benutzer anlegen und verwalten",
+            "Level": "Kein"
+          },
+          {
+            "Code": "AppAdmin",
+            "ErklaerungsText": "Kann App Benutzer verwalten",
+            "Level": "Kein"
+          },
+          {
+            "Code": "ReportSchreiben",
+            "ErklaerungsText": "Kann Reports erstellenn und \u00E4ndern",
+            "Level": "Kein"
+          },
+          {
+            "Code": "SettingsSchreiben",
+            "ErklaerungsText": "Erlaubt es den Benutzer Globale Berechtigungen zu schreiben",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "App-Admin",
+        "Beschreibung": "Neher App-Admin",
+        "RolleGuid": "5fd5087d-38d3-493a-9914-1a54a4c78d83"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "feedbackadmin",
+            "ErklaerungsText": "ist Feedback-Admin",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "FeedbackAdmin",
+        "Beschreibung": "Zugriff auf alle Feedbackitems und Bearbeitung, mandanten\u00FCbergreifen",
+        "RolleGuid": "0831b4f9-c8ab-4ed0-89dd-5343b505477d"
+      },
+      {
+        "Berechtigungen": [],
+        "Name": "UIPflegeAdmin",
+        "Beschreibung": "Zugriff auf alle UIPflege-Funktionalit\u00E4ten, mandanten\u00FCbergreifend",
+        "RolleGuid": "b259aa14-8de4-41d4-b0d7-ef327276ebe2"
+      },
+      {
+        "Berechtigungen": [
+          {
+            "Code": "neherapp3-dev",
+            "ErklaerungsText": "Entwickler (NeherApp3)",
+            "Level": "LesenUndSchreiben"
+          }
+        ],
+        "Name": "NeherApp3 Dev",
+        "Beschreibung": "NeherApp3 Developer",
+        "RolleGuid": "00000000-0000-0000-0000-000000000000"
+      }
+    ],
+    "BenutzerGuid": "67a515a7-cff6-44cb-9651-d4e9c7b402c3",
+    "Benutzername": "admin@mangrovia.test",
+    "Vorname": "Admin",
+    "Nachname": "Mangrovia Mosquito Management Ltd.",
+    "MandantGuid": "0b9d519d-de7f-40a2-ae73-39fce3195058",
+    "Passwort": null,
+    "PasswortBCrypt": "$2a$11$nSjkgRs7DIM4TGFmEVlteectuTPooVZCOVe9pS9IPrwDx4FEqfXaG",
+    "MasterKatalog": true,
+    "HauptKatalog": true,
+    "NewsletterId": 14,
+    "IstAktiv": true,
+    "GesperrteVarianten": [],
+    "ChangedDate": "2024-09-10T09:19:18.5618868Z",
+    "EmailAdresse": "philipp.reif@gandalan.de",
+    "TelefonNummer": null,
+    "Art": "BenutzerBase",
+    "IstSicSynchronized": true,
+    "LastSicMessage": ""
+  },
+  "MandantGuid": "0b9d519d-de7f-40a2-ae73-39fce3195058",
+  "Mandant": {
+    "Name": "Mangrovia Mosquito Management Ltd.",
+    "Beschreibung": "Testmandant Mangrovia Mosquito Management Ltd.",
+    "ErstellDatum": "2020-07-07T05:51:25.6466667Z",
+    "AenderungsDatum": "2020-07-07T05:51:25.6466667Z",
+    "AdminEmail": "admin@mangrovia.test",
+    "MandantGuid": "0b9d519d-de7f-40a2-ae73-39fce3195058",
+    "SIC_CMS_Producer_Id": 0,
+    "DongleNummer": null,
+    "ProduzentMandantGuid": "79fb4c84-e566-4caf-a05e-7d1b1b90a451",
+    "KundenNummerBeimProduzenten": "",
+    "IstAktiv": true,
+    "IstHaendler": false,
+    "IstProduzent": true,
+    "ErbtAuswahlOhneSprosse": false,
+    "StammdatenbearbeitungGesperrt": false
+  }
+}
