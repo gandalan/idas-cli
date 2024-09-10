@@ -2,3 +2,4 @@ bin
 obj
 .env
 dotnet-install.sh
+token
