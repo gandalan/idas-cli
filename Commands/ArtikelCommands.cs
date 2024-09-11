@@ -23,4 +23,20 @@ public class ArtikelCommands : CommandsBase
         var artikel = JsonSerializer.Deserialize<KatalogArtikelDTO>(await File.ReadAllTextAsync(file));
         await client.SaveArtikelAsync(artikel);
     }
+
+    [Command("sample", Description = "Create a sample KatalogArtikelDTO")]
+    public async Task CreateSample(CommonParameters commonParams)
+    {
+        await dumpOutput(commonParams, new KatalogArtikelDTO() {
+            Art = "KatalogArtikel",
+            Bezeichnung = "Testartikel",
+            Einheit = "Stk.",
+            Preis = 1.99m,
+            KatalogArtikelGuid = Guid.NewGuid(),
+            KatalogNummer = "99099",
+            Freigabe_IBOS = true,
+            GueltigAb = DateTime.Now,
+            GueltigBis = DateTime.Now.AddYears(1)
+        });
+    }
 }

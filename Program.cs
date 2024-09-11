@@ -13,6 +13,9 @@ app.AddSubCommand("gsql", x => x.AddCommands<gSQLCommands>());
 app.AddSubCommand("kontakt", x => x.AddCommands<KontaktCommands>());
 app.AddSubCommand("artikel", x => x.AddCommands<ArtikelCommands>());
 app.AddSubCommand("av", x => x.AddCommands<AVCommands>());
+app.AddSubCommand("lagerbestand", x => x.AddCommands<LagerbestandCommands>());
+app.AddSubCommand("lagerbuchung", x => x.AddCommands<LagerbuchungCommands>());
+app.AddSubCommand("warengruppe", x => x.AddCommands<WarengruppeCommands>());
 
 app.Run();
 

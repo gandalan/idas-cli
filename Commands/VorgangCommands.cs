@@ -39,4 +39,45 @@ public class VorgangCommands : CommandsBase
         var response = await client.SendeVorgangAsync(vorgang);
         await dumpOutput(commonParams, response);
     }
+
+    [Command("sample", Description = "Create a sample VorgangDTO")]
+    public async Task CreateSample(CommonParameters commonParams)
+    {
+        var posGuid = Guid.NewGuid();
+        await dumpOutput(commonParams, new VorgangDTO()
+        {
+            IstTestbeleg = true,
+            ErstellDatum = DateTime.Now,
+            VorgangGuid = Guid.NewGuid(),
+            VorgangsNummer = 99099,
+            Kommission = "Testvorgang",
+
+            Belege = [
+                new() {
+                    Positionen = new List<Guid>() { posGuid },
+                    BelegGuid = Guid.NewGuid(),
+                    BelegNummer = 99099,
+                    BelegArt = "Angebot",
+                    BelegDatum = DateTime.Now,
+                    BelegJahr = DateTime.Now.Year,
+                    InterneNotiz = "Testbeleg!",
+                }
+            ],
+
+            Positionen = [
+                new BelegPositionDTO() { 
+                    BelegPositionGuid = posGuid, 
+                    Einbauort = "Test",
+                    PositionsKommission = "PositionsKommission",
+                    ErfassungsDatum = DateTime.Now,
+                    Einzelpreis = 1.0m,
+                    Menge = 1.0m,
+                    IstAktiv = true,
+                    Daten = [ 
+                        new() { BelegPositionDatenGuid = Guid.NewGuid(), DatenTyp = "string", KonfigName="Besonderheiten", Wert = "Test" }
+                    ] 
+                }
+            ]
+        });
+    }
 }

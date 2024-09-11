@@ -34,4 +34,11 @@ public class KontaktCommands : CommandsBase
         var kontakt = JsonSerializer.Deserialize<KontaktDTO>(await File.ReadAllTextAsync(file));
         Console.WriteLine(JsonSerializer.Serialize(await client.SaveKontaktAsync(kontakt)));
     }
+
+    [Command("sample", Description = "Create a sample KontaktDTO")]
+    public async Task CreateSample(CommonParameters commonParams) => await dumpOutput(commonParams, new KontaktDTO()
+    {
+        Firmenname = "Musterfirma",
+        Personen = [ new() { Vorname = "Max", Nachname = "Mustermann" } ]
+    });
 }
