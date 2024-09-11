@@ -7,7 +7,7 @@ using Gandalan.IDAS.WebApi.DTO;
 
 public class CommandsBase
 {
-    protected async Task<IWebApiConfig?> getSettings(string? user = null, string? password = null, Guid? appGuid = null, string? env = null)
+    protected async Task<IWebApiConfig> getSettings(string? user = null, string? password = null, Guid? appGuid = null, string? env = null)
     {
         env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
         appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
@@ -48,7 +48,7 @@ public class CommandsBase
             return settings;
         }
 
-        return null;
+        throw new InvalidOperationException("Login failed");
     }
 
     protected async Task dumpOutput(CommonParameters commonParameters, object data)

@@ -7,7 +7,6 @@ DotEnv.Load(dotenv);
 var builder = CoconaApp.CreateBuilder();
 
 var app = builder.Build();
-app.AddCommands<UserCommands>();
 app.AddSubCommand("vorgang", x => x.AddCommands<VorgangCommands>());
 app.AddSubCommand("gsql", x => x.AddCommands<gSQLCommands>());
 app.AddSubCommand("kontakt", x => x.AddCommands<KontaktCommands>());
@@ -16,7 +15,7 @@ app.AddSubCommand("av", x => x.AddCommands<AVCommands>());
 app.AddSubCommand("lagerbestand", x => x.AddCommands<LagerbestandCommands>());
 app.AddSubCommand("lagerbuchung", x => x.AddCommands<LagerbuchungCommands>());
 app.AddSubCommand("warengruppe", x => x.AddCommands<WarengruppeCommands>());
-
+app.AddSubCommand("benutzer", x => x.AddCommands<BenutzerCommands>());
 app.Run();
 
 public record CommonParameters(

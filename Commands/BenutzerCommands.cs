@@ -3,7 +3,7 @@ using Cocona;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
 
-public class UserCommands 
+public class BenutzerCommands : CommandsBase
 {
     [Command("login")]
     public async Task Login(
@@ -45,5 +45,14 @@ public class UserCommands
         {
             Console.WriteLine("Login failed");
         }
+    }
+
+    [Command("list", Description = "Get the list of own users")]
+    public async Task List(CommonParameters commonParams)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+        var data = await client.GetBenutzerListeAsync(settings.AuthToken.MandantGuid);
+        await dumpOutput(commonParams, data);
     }
 }
