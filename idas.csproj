@@ -5,8 +5,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishSingleFile>true</PublishSingleFile>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Cocona" Version="2.2.0" />
-    <PackageReference Include="GDL.IDAS.WebApi.Client" Version="2024.9.10.704" />
+    <PackageReference Include="GDL.IDAS.WebApi.Client" Version="2024.9.12.706" />
   </ItemGroup>
 
 </Project>

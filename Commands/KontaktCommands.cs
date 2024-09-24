@@ -38,7 +38,9 @@ public class KontaktCommands : CommandsBase
     [Command("sample", Description = "Create a sample KontaktDTO")]
     public async Task CreateSample(CommonParameters commonParams) => await dumpOutput(commonParams, new KontaktDTO()
     {
+        KontaktGuid = Guid.NewGuid(),
         Firmenname = "Musterfirma",
-        Personen = [ new() { Vorname = "Max", Nachname = "Mustermann" } ]
+        ChangedDate = DateTime.UtcNow,
+        Personen = [ new() { PersonGuid = Guid.NewGuid(), Vorname = "Max", Nachname = "Mustermann" } ]
     });
 }

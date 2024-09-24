@@ -1,0 +1,33 @@
+profile = "custom"
+
+[msbuild]
+project = "idas.sln"
+
+[msbuild.properties]
+PublishTrimmed = false
+PublishSingleFile = true
+SelfContained = true
+PublishReadyToRun = true 
+CopyOutputSymbolsToPublishDirectory = false
+SkipCopyingSymbolsToOutputDirectory = true 
+
+[nuget]
+publish = false
+
+[github]
+user = "gandalan"
+repo = "idas-cli"
+
+[[pack]]
+rid = ["win-x64"]
+kinds = ["zip"]
+
+# Default targets for Linux/Ubuntu Debian compatible distro with debian and tar packages
+[[pack]]
+rid = ["linux-x64", "linux-arm", "linux-arm64"]
+kinds = ["deb", "tar"]
+
+# Default targets for macOS, only tar files for this platform
+[[pack]]
+rid = ["osx-x64", "osx-arm64"]
+kinds = ["tar"]

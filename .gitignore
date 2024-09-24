@@ -3,3 +3,5 @@ obj
 .env
 dotnet-install.sh
 token
+artifacts-dotnet-releaser
+*.json

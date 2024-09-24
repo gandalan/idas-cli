@@ -36,8 +36,12 @@ public class VorgangCommands : CommandsBase
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
         var vorgang = JsonSerializer.Deserialize<VorgangDTO>(await File.ReadAllTextAsync(file));
-        var response = await client.SendeVorgangAsync(vorgang);
-        await dumpOutput(commonParams, response);
+        if (vorgang != null)
+        {
+            vorgang.IstZustimmungErteilt = true;
+            var response = await client.SendeVorgangAsync(vorgang);
+            await dumpOutput(commonParams, response);
+        } else throw new Exception("Invalid JSON file");
     }
 
     [Command("sample", Description = "Create a sample VorgangDTO")]
@@ -61,6 +65,17 @@ public class VorgangCommands : CommandsBase
                     BelegDatum = DateTime.Now,
                     BelegJahr = DateTime.Now.Year,
                     InterneNotiz = "Testbeleg!",
+                    BelegAdresse = new BeleganschriftDTO() { 
+                        AdressGuid = Guid.NewGuid(), 
+                        Anrede = "Herr",
+                        Vorname = "Test",
+                        Nachname = "Test",
+                        Strasse = "Test", 
+                        Postleitzahl = "12345", 
+                        Ort = "Test", 
+                        Land = "DE"
+                    }, 
+                    VersandAdresseGleichBelegAdresse = true
                 }
             ],
 
@@ -73,6 +88,7 @@ public class VorgangCommands : CommandsBase
                     Einzelpreis = 1.0m,
                     Menge = 1.0m,
                     IstAktiv = true,
+                    ArtikelNummer = "102302.ZS",
                     Daten = [ 
                         new() { BelegPositionDatenGuid = Guid.NewGuid(), DatenTyp = "string", KonfigName="Besonderheiten", Wert = "Test" }
                     ] 
