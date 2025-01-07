@@ -26,6 +26,7 @@ public class KontaktCommands : CommandsBase
 
     [Command("put")]
     public async Task PutKontakt(
+        CommonParameters commonParams,
         [Argument("file", Description = "JSON file with Kontakt data")]
         string file)
     {
