@@ -11,6 +11,7 @@ public class RollenCommands
         _rollenWebRoutinen = rollenWebRoutinen;
     }
 
+    [Command]
     public async Task ListRollen()
     {
         var rollen = await _rollenWebRoutinen.GetAllAsync();
