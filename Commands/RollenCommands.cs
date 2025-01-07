@@ -11,9 +11,9 @@ public class RollenCommands
         _rollenWebRoutinen = rollenWebRoutinen;
     }
 
-    public void ListRollen()
+    public async Task ListRollen()
     {
-        var rollen = _rollenWebRoutinen.GetAllAsync();
+        var rollen = await _rollenWebRoutinen.GetAllAsync();
         foreach (var rolle in rollen)
         {
             Console.WriteLine($"Rolle: {rolle.Name}");
