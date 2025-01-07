@@ -17,6 +17,7 @@ app.AddSubCommand("lagerbuchung", x => x.AddCommands<LagerbuchungCommands>());
 app.AddSubCommand("warengruppe", x => x.AddCommands<WarengruppeCommands>());
 app.AddSubCommand("benutzer", x => x.AddCommands<BenutzerCommands>());
 app.AddSubCommand("serie", x => x.AddCommands<SerieCommands>());
+app.AddSubCommand("rollen", x => x.AddCommands<RollenCommands>());
 app.Run();
 
 public record CommonParameters(
