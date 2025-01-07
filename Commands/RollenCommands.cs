@@ -12,7 +12,7 @@ public class RollenCommands
     }
 
     [Command]
-    public async Task ListRollen()
+    public async Task ListRollen(CommonParameters commonParams)
     {
         var rollen = await _rollenWebRoutinen.GetAllAsync();
         foreach (var rolle in rollen)
