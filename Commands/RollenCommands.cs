@@ -1,5 +1,6 @@
 using System;
 using Cocona;
+using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 
 public class RollenCommands
 {
@@ -12,7 +13,7 @@ public class RollenCommands
 
     public void ListRollen()
     {
-        var rollen = _rollenWebRoutinen.GetRollen();
+        var rollen = _rollenWebRoutinen.GetAllAsync();
         foreach (var rolle in rollen)
         {
             Console.WriteLine($"Rolle: {rolle.Name}");
