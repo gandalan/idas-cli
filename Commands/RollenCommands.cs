@@ -10,9 +10,6 @@ public class RollenCommands : CommandsBase
         var settings = await getSettings();
         RollenWebRoutinen client = new(settings);
         var rollen = await client.GetAllAsync();
-        foreach (var rolle in rollen)
-        {
-            Console.WriteLine($"Rolle: {rolle.Name}");
-        }
+        await dumpOutput(commonParams, rollen);
     }
 }
