@@ -5,15 +5,15 @@ using Gandalan.IDAS.WebApi.DTO;
 
 public class SerieCommands : CommandsBase
 {
-    [Command("serie-list")]
+    [Command("list")]
     public async Task GetSerienList(CommonParameters commonParams)
     {
         var settings = await getSettings();
         SerienWebRoutinen client = new(settings);
-        await dumpOutput(commonParams, await client.GetSerienAsync());
+        await dumpOutput(commonParams, await client.GetAllSerienAsync());
     }
 
-    [Command("serie-get")]
+    [Command("get")]
     public async Task GetSerie(
         CommonParameters commonParams,
         [Argument("serie", Description = "Serie-GUID")]
@@ -24,7 +24,7 @@ public class SerieCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetSerieAsync(serie));
     }
 
-    [Command("serie-put")]
+    [Command("put")]
     public async Task PutSerie(
         [Argument("file", Description = "JSON file with Serie data")]
         string file)
@@ -32,10 +32,11 @@ public class SerieCommands : CommandsBase
         var settings = await getSettings();
         SerienWebRoutinen client = new(settings);
         var serie = JsonSerializer.Deserialize<SerieDTO>(await File.ReadAllTextAsync(file));
-        Console.WriteLine(JsonSerializer.Serialize(await client.SaveSerieAsync(serie)));
+        //Console.WriteLine(JsonSerializer.Serialize(await client.SaveSerieAsync(serie)));
+        await client.SaveSerieAsync(serie);
     }
 
-    [Command("serie-sample", Description = "Create a sample SerieDTO")]
+    [Command("sample", Description = "Create a sample SerieDTO")]
     public async Task CreateSampleSerie(CommonParameters commonParams) => await dumpOutput(commonParams, new SerieDTO()
     {
         SerieGuid = Guid.NewGuid(),

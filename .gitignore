@@ -5,3 +5,4 @@ dotnet-install.sh
 token
 artifacts-dotnet-releaser
 *.json
+.aider*
