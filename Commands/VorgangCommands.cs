@@ -96,4 +96,63 @@ public class VorgangCommands : CommandsBase
             ]
         });
     }
+
+    [Command("archive", Description = "Archiviert einen einzelnen Vorgang")]
+    public async Task ArchiveVorgang(
+        CommonParameters commonParams,
+        [Argument("vorgang", Description = "Vorgang-GUID")]
+        Guid vorgang)
+    {
+        var settings = await getSettings();
+        VorgangWebRoutinen client = new(settings);
+        await client.ArchiviereVorgangAsync(vorgang);
+        await dumpOutput(commonParams, new { Status = "Archiviert" });
+    }
+
+    [Command("archive-bulk", Description = "Archiviert mehrere Vorgänge gleichzeitig")]
+    public async Task ArchiveVorgangBulk(
+        CommonParameters commonParams,
+        [Argument("vorgaenge", Description = "Kommagetrennte Liste von Vorgang-GUIDs")]
+        string vorgaenge)
+    {
+        var settings = await getSettings();
+        VorgangWebRoutinen client = new(settings);
+        
+        var guids = vorgaenge.Split(',')
+            .Select(g => Guid.TryParse(g.Trim(), out Guid guid) ? guid : Guid.Empty)
+            .Where(g => g != Guid.Empty)
+            .ToList();
+
+        if (!guids.Any())
+        {
+            await dumpOutput(commonParams, new { Status = "Fehler: Keine gültigen GUIDs gefunden" });
+            return;
+        }
+
+        try
+        {
+            await client.ArchiviereVorgangListAsync(guids);
+            await dumpOutput(commonParams, new {
+                Status = "Archiviert",
+                Anzahl = guids.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            await dumpOutput(commonParams, new { Status = $"Fehler: {ex.Message}" });
+        }
+    }
+
+
+    [Command("activate")]
+    public async Task ActivateVorgang(
+        CommonParameters commonParams,
+        [Argument("vorgang", Description = "Vorgang-GUID")]
+        Guid vorgang)
+    {
+        var settings = await getSettings();
+        VorgangWebRoutinen client = new(settings);
+        await client.ArchivierungAufhebenAsync(vorgang);
+        await dumpOutput(commonParams, new { Status = "Aktiviert" });
+    }
 }
