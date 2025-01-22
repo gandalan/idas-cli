@@ -18,13 +18,12 @@ public class CommandsBase
         if (File.Exists("token"))
         {
             var token = await File.ReadAllTextAsync("token");
-            var authToken = JsonSerializer.Deserialize<UserAuthTokenDTO>(token);
-            if (authToken != null && await new WebRoutinenBase(settings).LoginAsync())
+            settings.AuthToken = JsonSerializer.Deserialize<UserAuthTokenDTO>(token);
+            if (settings.AuthToken != null && await new WebRoutinenBase(settings).LoginAsync())
             {
-                Console.WriteLine($"Login from stored token successful: User={settings.UserName} Mandant={authToken.Mandant.Name}, Environment={settings.FriendlyName}");
+                Console.WriteLine($"Login from stored token successful: User={settings.UserName} Mandant={settings.AuthToken.Mandant.Name}, Environment={settings.FriendlyName}");
                 settings.UserName = user;
                 settings.Passwort = password;
-                settings.AuthToken = authToken;
                 settings.AppToken = appGuid.Value;
                 return settings;
             }
