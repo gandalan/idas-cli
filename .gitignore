@@ -6,3 +6,4 @@ token
 artifacts-dotnet-releaser
 *.json
 .aider*
+.env.phil
