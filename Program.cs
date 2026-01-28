@@ -18,6 +18,11 @@ app.AddSubCommand("warengruppe", x => x.AddCommands<WarengruppeCommands>());
 app.AddSubCommand("benutzer", x => x.AddCommands<BenutzerCommands>());
 app.AddSubCommand("serie", x => x.AddCommands<SerieCommands>());
 app.AddSubCommand("rollen", x => x.AddCommands<RollenCommands>());
+app.AddSubCommand("variante", x => x.AddCommands<VarianteCommands>());
+app.AddSubCommand("uidefinition", x => x.AddCommands<UIDefinitionCommands>());
+app.AddSubCommand("konfigsatz", x => x.AddCommands<KonfigSatzCommands>());
+app.AddSubCommand("werteliste", x => x.AddCommands<WertelisteCommands>());
+app.AddSubCommand("mcp", x => x.AddCommands<McpServerCommand>());
 app.Run();
 
 public record CommonParameters(
