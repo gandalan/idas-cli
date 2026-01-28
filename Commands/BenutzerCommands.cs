@@ -2,6 +2,7 @@ using System.Text.Json;
 using Cocona;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
+using Gandalan.IDAS.WebApi.DTO;
 
 public class BenutzerCommands : CommandsBase
 {
@@ -54,5 +55,43 @@ public class BenutzerCommands : CommandsBase
         var client = new BenutzerWebRoutinen(settings);
         var data = await client.GetBenutzerListeAsync(settings.AuthToken.MandantGuid);
         await dumpOutput(commonParams, data);
+    }
+
+    [Command("password-reset", Description = "Reset password for a user by email")]
+    public async Task PasswordReset(
+        [Argument("email", Description = "User's email address")]
+        string email)
+    {
+        var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
+        var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+        await WebApiConfigurations.InitializeAsync(appGuid);
+        var settings = WebApiConfigurations.ByName(env);
+
+        var client = new BenutzerWebRoutinen(settings);
+        await client.PasswortResetAsync(email);
+        Console.WriteLine($"Password reset email has been sent to {email}");
+    }
+
+    [Command("change-password", Description = "Change password for the current user")]
+    public async Task ChangePassword(
+        [Argument("username", Description = "Username or email")]
+        string username,
+        [Argument("old-password", Description = "Current password")]
+        string oldPassword,
+        [Argument("new-password", Description = "New password")]
+        string newPassword)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+
+        var passwortAendernData = new PasswortAendernDTO
+        {
+            Benutzername = username,
+            AltesPasswort = oldPassword,
+            NeuesPasswort = newPassword
+        };
+
+        await client.PasswortAendernAsync(passwortAendernData);
+        Console.WriteLine($"Password successfully changed for user {username}");
     }
 }
