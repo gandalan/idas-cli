@@ -1,28 +1,78 @@
-name: .NET
+name: Build and Release
 
 on:
+  # Build on push to main (CI validation)
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
+  # Build on PRs to main
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Build, Tests, Cover, Pack and Publish (on push tag)
-      shell: bash
+    
+    - name: Build (validation)
+      run: dotnet build --no-restore -c Release
+
+  release:
+    # Only run on version tags
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Extract version from tag
+      id: version
       run: |
-        dotnet tool install --global dotnet-releaser
-        dotnet-releaser run --github-token "${{secrets.GITHUB_TOKEN}}" dotnet-releaser.toml
+        # Strip 'v' prefix from tag (e.g., v1.2.3 -> 1.2.3)
+        VERSION="${GITHUB_REF_NAME#v}"
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Building version: ${VERSION}"
+    
+    - name: Make publish script executable
+      run: chmod +x ./publish.sh
+    
+    - name: Build and package artifacts
+      run: ./publish.sh "${{ steps.version.outputs.version }}"
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts
+        path: dist/*
+        retention-days: 5
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*
+        generate_release_notes: true
+        draft: false
+        prerelease: ${{ contains(github.ref_name, '-') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

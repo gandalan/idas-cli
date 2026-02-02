@@ -1,6 +1,8 @@
 using Cocona;
 using IdasCli.Mcp;
+#if DEBUG
 using IdasCli.Tools;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -30,6 +32,7 @@ public class McpServerCommand : CommandsBase
         await builder.Build().RunAsync();
     }
 
+#if DEBUG
     [Command("generate-tools", Description = "Generate MCP tool source code from Cocona commands")]
     public async Task GenerateTools(
         [Option("output", Description = "Output file path")] 
@@ -37,4 +40,5 @@ public class McpServerCommand : CommandsBase
     {
         await McpToolSourceGenerator.GenerateAndSaveAsync(output);
     }
+#endif
 }

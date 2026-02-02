@@ -1,3 +1,4 @@
+#if DEBUG
 using System.Text;
 using IdasCli.Mcp;
 
@@ -214,3 +215,4 @@ public class McpToolSourceGenerator
         Console.WriteLine($"Total tools generated: {McpToolRegistrar.GetAllTools().Count()}");
     }
 }
+#endif

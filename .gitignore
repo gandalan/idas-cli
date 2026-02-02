@@ -7,3 +7,5 @@ artifacts-dotnet-releaser
 *.json
 .aider*
 .env.*
+publish.log
+dist/*
