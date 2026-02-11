@@ -7,15 +7,19 @@ public class VorgangCommands : CommandsBase
 {
     [Command("list")]
     public async Task GetList(CommonParameters commonParams,
-        [Option("jahr", Description = "Year to list")] int? jahr = null,
-        [Option("includeArchive", Description = "Include archived Vorgänge")] bool includeArchive = false)
+        [Option("jahr", Description = "Year to list (0 = all years)")] int? jahr = null,
+        [Option("includeArchive", Description = "Include archived Vorgänge")] bool includeArchive = true,
+        [Option("includeOthersData", Description = "Include data from other users")] bool includeOthersData = true,
+        [Option("includeASP", Description = "Include application specific properties")] bool includeASP = true,
+        [Option("includeAdditionalProperties", Description = "Include additional properties")] bool includeAdditionalProperties = true)
     {
         var settings = await getSettings();
-        VorgangWebRoutinen client = new(settings);
-        var year = jahr ?? DateTime.Now.Year;
+        VorgangListeWebRoutinen client = new(settings);
+        var year = jahr ?? 0; // 0 = all years, like the client does
         
-        // Load active/regular Vorgänge
-        var activeList = await client.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "", includeArchive);
+        // Load Vorgänge with same parameters as the client (using VorgangListeWebRoutinen)
+        var activeList = await client.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "", 
+            includeArchive, includeOthersData, "", includeASP, includeAdditionalProperties);
         await dumpOutput(commonParams, activeList);
     }
 
