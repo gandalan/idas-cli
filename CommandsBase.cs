@@ -7,12 +7,46 @@ using Gandalan.IDAS.WebApi.DTO;
 
 public class CommandsBase
 {
+    private static readonly HashSet<Guid> _initializedAppTokens = new();
+    private static readonly object _initLock = new();
+    
+    /// <summary>
+    /// When true, suppresses all console output (used in MCP server mode)
+    /// </summary>
+    public static bool IsSilentMode { get; set; } = false;
+
+    protected void SafeLog(string message)
+    {
+        if (IsSilentMode)
+            return;
+            
+        try
+        {
+            Console.WriteLine(message);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Console writer already closed - ignore in MCP mode
+        }
+        catch (IOException)
+        {
+            // Cannot write to closed TextWriter - ignore in MCP mode  
+        }
+    }
+
     protected async Task<IWebApiConfig> getSettings(string? user = null, string? password = null, Guid? appGuid = null, string? env = null)
     {
         env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
         appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
         
-        await WebApiConfigurations.InitializeAsync(appGuid.Value);
+        lock (_initLock)
+        {
+            if (!_initializedAppTokens.Contains(appGuid.Value))
+            {
+                WebApiConfigurations.InitializeAsync(appGuid.Value).Wait();
+                _initializedAppTokens.Add(appGuid.Value);
+            }
+        }
         var settings = WebApiConfigurations.ByName(env);
         
         if (File.Exists("token"))
@@ -21,7 +55,7 @@ public class CommandsBase
             settings.AuthToken = JsonSerializer.Deserialize<UserAuthTokenDTO>(token);
             if (settings.AuthToken != null && await new WebRoutinenBase(settings).LoginAsync())
             {
-                Console.WriteLine($"Login from stored token successful: User={settings.UserName} Mandant={settings.AuthToken.Mandant.Name}, Environment={settings.FriendlyName}");
+                SafeLog($"Login from stored token successful: User={settings.UserName} Mandant={settings.AuthToken.Mandant.Name}, Environment={settings.FriendlyName}");
                 settings.UserName = user;
                 settings.Passwort = password;
                 settings.AppToken = appGuid.Value;
@@ -64,12 +98,36 @@ public class CommandsBase
                 {
                     await File.WriteAllTextAsync(commonParameters.FileName, output);
                 } else {
-                    Console.WriteLine(output);
+                    // Always write data output, even in silent mode (needed for MCP)
+                    try
+                    {
+                        Console.WriteLine(output);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Console closed - ignore
+                    }
+                    catch (IOException)
+                    {
+                        // Cannot write - ignore
+                    }
                 }
                 break;
     
             default:
-                Console.WriteLine(data.ToString());
+                // Always write data output, even in silent mode (needed for MCP)
+                try
+                {
+                    Console.WriteLine(data.ToString());
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Console closed - ignore
+                }
+                catch (IOException)
+                {
+                    // Cannot write - ignore
+                }
                 break;
         }
     }

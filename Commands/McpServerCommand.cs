@@ -13,6 +13,9 @@ public class McpServerCommand : CommandsBase
     [Command("serve", Description = "Start the MCP server with dynamically registered Cocona commands")]
     public async Task Serve()
     {
+        // Enable silent mode to suppress console output from commands
+        CommandsBase.IsSilentMode = true;
+        
         // Scan and register all Cocona commands as MCP tools (suppress verbose output)
         McpToolRegistrar.ScanAndRegisterTools(verbose: false);
 

@@ -49,47 +49,55 @@ public class DynamicCoconaTool : CommandsBase
             var methodParams = PrepareMethodParameters(metadata, parameters);
 
             // Use output capture to intercept console output
-            using var outputCapture = new OutputCapture();
-
-            // Invoke the method
-            var result = metadata.Method.Invoke(commandInstance, methodParams);
-
-            // Handle async methods
-            if (result is Task task)
+            OutputCapture? outputCapture = null;
+            try
             {
-                await task;
-                
-                // Check if there's a captured output
-                var capturedOutput = outputCapture.GetCapturedOutput();
-                if (!string.IsNullOrEmpty(capturedOutput))
+                outputCapture = new OutputCapture();
+
+                // Invoke the method
+                var result = metadata.Method.Invoke(commandInstance, methodParams);
+
+                // Handle async methods
+                if (result is Task task)
                 {
-                    // Try to parse as JSON
-                    try
+                    await task;
+                    
+                    // Check if there's a captured output
+                    var capturedOutput = outputCapture.GetCapturedOutput();
+                    if (!string.IsNullOrEmpty(capturedOutput))
                     {
-                        var jsonObject = JsonSerializer.Deserialize<object>(capturedOutput);
-                        return new
+                        // Try to parse as JSON
+                        try
                         {
-                            Success = true,
-                            Data = jsonObject
-                        };
-                    }
-                    catch
-                    {
-                        return new
+                            var jsonObject = JsonSerializer.Deserialize<object>(capturedOutput);
+                            return new
+                            {
+                                Success = true,
+                                Data = jsonObject
+                            };
+                        }
+                        catch
                         {
-                            Success = true,
-                            Data = capturedOutput
-                        };
+                            return new
+                            {
+                                Success = true,
+                                Data = capturedOutput
+                            };
+                        }
                     }
                 }
-            }
 
-            return new
+                return new
+                {
+                    Success = true,
+                    Message = $"Command {toolName} executed successfully",
+                    Output = outputCapture.GetCapturedOutput()
+                };
+            }
+            finally
             {
-                Success = true,
-                Message = $"Command {toolName} executed successfully",
-                Output = outputCapture.GetCapturedOutput()
-            };
+                outputCapture?.Dispose();
+            }
         }
         catch (TargetInvocationException ex)
         {
@@ -228,7 +236,7 @@ public class DynamicCoconaTool : CommandsBase
                 return intValue;
         }
 
-        // Handle JSON element to string
+        // Handle JSON element conversions
         if (value is JsonElement jsonElement)
         {
             if (targetType == typeof(string))
@@ -239,6 +247,15 @@ public class DynamicCoconaTool : CommandsBase
                 return jsonElement.GetGuid();
             if (targetType == typeof(bool))
                 return jsonElement.GetBoolean();
+            if (targetType == typeof(bool?) && jsonElement.ValueKind == JsonValueKind.Null)
+                return null;
+        }
+        
+        // Handle string to bool conversion (for MCP clients sending "true"/"false" as strings)
+        if (targetType == typeof(bool) && value is string boolString)
+        {
+            if (bool.TryParse(boolString, out var boolValue))
+                return boolValue;
         }
 
         // Try standard conversion

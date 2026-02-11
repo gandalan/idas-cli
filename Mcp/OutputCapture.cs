@@ -1,28 +1,56 @@
 namespace IdasCli.Mcp;
 
 /// <summary>
-/// Captures console output for interception
+/// Captures console output for interception - thread-safe version
+/// Uses a global lock to ensure only one capture is active at a time
 /// </summary>
 public class OutputCapture : IDisposable
 {
+    private static readonly object _globalLock = new();
+    private static TextWriter? _originalOutput;
+    private static int _activeCaptures = 0;
     private readonly StringWriter _stringWriter;
-    private readonly TextWriter _originalOutput;
+    private bool _disposed;
 
     public OutputCapture()
     {
         _stringWriter = new StringWriter();
-        _originalOutput = Console.Out;
-        Console.SetOut(_stringWriter);
+        
+        lock (_globalLock)
+        {
+            if (_activeCaptures == 0)
+            {
+                _originalOutput = Console.Out;
+            }
+            _activeCaptures++;
+            Console.SetOut(_stringWriter);
+        }
     }
 
     public string GetCapturedOutput()
     {
-        return _stringWriter.ToString();
+        lock (_globalLock)
+        {
+            return _stringWriter.ToString();
+        }
     }
 
     public void Dispose()
     {
-        Console.SetOut(_originalOutput);
+        if (_disposed) return;
+        
+        lock (_globalLock)
+        {
+            _activeCaptures--;
+            if (_activeCaptures == 0 && _originalOutput != null)
+            {
+                Console.SetOut(_originalOutput);
+            }
+            // Don't restore Console.Out if there are still active captures
+            // The next active capture's StringWriter is already set
+        }
+        
         _stringWriter.Dispose();
+        _disposed = true;
     }
 }

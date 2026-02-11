@@ -7,12 +7,16 @@ public class VorgangCommands : CommandsBase
 {
     [Command("list")]
     public async Task GetList(CommonParameters commonParams,
-        [Option("jahr", Description = "Year to list")] int? jahr = null)
+        [Option("jahr", Description = "Year to list")] int? jahr = null,
+        [Option("includeArchive", Description = "Include archived Vorgänge")] bool includeArchive = false)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
-        var response = await client.LadeVorgangsListeAsync(jahr ?? DateTime.Now.Year);
-        await dumpOutput(commonParams, response);
+        var year = jahr ?? DateTime.Now.Year;
+        
+        // Load active/regular Vorgänge
+        var activeList = await client.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "", includeArchive);
+        await dumpOutput(commonParams, activeList);
     }
 
     [Command("get")]

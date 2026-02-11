@@ -1,7 +1,7 @@
-﻿using Cocona;
+using Cocona;
 
-var root = Directory.GetCurrentDirectory();
-var dotenv = Path.Combine(root, ".env");
+var exeDir = AppContext.BaseDirectory;
+var dotenv = Path.Combine(exeDir, ".env");
 DotEnv.Load(dotenv);
 
 var builder = CoconaApp.CreateBuilder();
