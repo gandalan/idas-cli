@@ -1,50 +1,91 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Cocona;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
 using Gandalan.IDAS.WebApi.DTO;
+using IDAS.Cli.SSO;
 
 public class BenutzerCommands : CommandsBase
 {
     [Command("login")]
     public async Task Login(
-        [Option("user", Description = "User name")] string? user,
-        [Option("password", Description = "Password")] string? password, 
         [Option("appguid", Description = "AppGuid (provided by Gandalan)")] Guid? appGuid,
         [Option("env", Description = "Environment (dev, staging, produktiv)")] string? env)
     {
         env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
         appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
-        user = user ?? Environment.GetEnvironmentVariable("IDAS_USER");
-        password = password ?? Environment.GetEnvironmentVariable("IDAS_PASSWORD");
 
-        if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password) || appGuid == Guid.Empty)
+        if (appGuid == Guid.Empty)
         {
-            Console.WriteLine("Please provide user, password and appGuid either as command line parameters or in the .env file.");
+            Console.WriteLine("Please provide appGuid either as command line parameter or via IDAS_APP_TOKEN environment variable.");
             return;
         }
 
         await WebApiConfigurations.InitializeAsync(appGuid.Value);
         var settings = WebApiConfigurations.ByName(env);
-        settings.UserName = user;
-        settings.Passwort = password;
+
+        using var server = new SsoCallbackServer();
+        await server.StartAsync();
+
+        var redirectUrl = Uri.EscapeDataString(server.CallbackUrl + "?token=%token%");
+        var idasUri = new Uri(settings.IDASUrl.TrimEnd('/'));
+        var baseUrl = $"{idasUri.Scheme}://{idasUri.Host}";
+        if (!idasUri.IsDefaultPort)
+            baseUrl += $":{idasUri.Port}";
+        var ssoUrl = $"{baseUrl}/SSO?a={appGuid}&r={redirectUrl}";
+        
+        Process.Start(new ProcessStartInfo(ssoUrl) { UseShellExecute = true });
+        Console.WriteLine("Browser geöffnet. Bitte im Browser einloggen...");
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
+        string token;
+        try
+        {
+            token = await server.WaitForTokenAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Login timeout - no token received within 120 seconds.");
+            return;
+        }
+        
+        // Create minimal auth token with the received token
+        settings.AuthToken = new UserAuthTokenDTO 
+        { 
+            Token = Guid.Parse(token),
+            AppToken = appGuid.Value
+        };
 
         var client = new WebRoutinenBase(settings);
-        if (await client.LoginAsync())
+        client.IgnoreOnErrorOccured = true;
+        
+        try
         {
-            settings.AuthToken = client.AuthToken; 
-            Console.WriteLine($"Login successful: User={settings.UserName} Mandant={client.AuthToken.Mandant.Name}, Environment={settings.FriendlyName}");
-            JsonSerializerOptions options = new() 
-            { 
-                WriteIndented = true
-            };
-            await File.WriteAllTextAsync("token", JsonSerializer.Serialize(client.AuthToken, options));
-            //await File.WriteAllTextAsync(dump, JsonSerializer.Serialize(client.AuthToken, options));
-            //Process.Start("notepad.exe", dump);
-        } 
-        else 
+            // Use RefreshTokenAsync to get the full UserAuthTokenDTO from the server
+            var refreshedToken = await client.RefreshTokenAsync(settings.AuthToken.Token);
+            
+            if (refreshedToken != null)
+            {
+                settings.AuthToken = refreshedToken;
+                Console.WriteLine($"Login successful: User={settings.AuthToken.Benutzer?.Benutzername} Mandant={settings.AuthToken.Mandant?.Name}, Environment={settings.FriendlyName}");
+                JsonSerializerOptions options = new()
+                {
+                    WriteIndented = true
+                };
+                await File.WriteAllTextAsync("token", JsonSerializer.Serialize(settings.AuthToken, options));
+            }
+            else
+            {
+                Console.WriteLine("Login failed - could not refresh token");
+                Console.WriteLine("The SSO token might not be compatible with the API login.");
+            }
+        }
+        catch (Exception ex)
         {
-            Console.WriteLine("Login failed");
+            Console.WriteLine($"Login error: {ex.Message}");
+            if (ex.InnerException != null)
+                Console.WriteLine($"Inner: {ex.InnerException.Message}");
         }
     }
 
