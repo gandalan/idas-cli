@@ -28,18 +28,20 @@ if (!File.Exists(dotenv) && File.Exists(dotenvSample))
     Console.WriteLine();
     Console.WriteLine("✓ Konfiguration gespeichert in .env");
     Console.WriteLine();
-    
-    // If called without arguments and no token file exists, auto-start login
-    if (args.Length == 0 && !File.Exists("token"))
-    {
-        Console.WriteLine("Starte SSO-Login...");
-        args = new[] { "benutzer", "login" };
-    }
 }
 
 DotEnv.Load(dotenv);
 
-var builder = CoconaApp.CreateBuilder();
+// If called without arguments and no token file exists, auto-start login
+string[] effectiveArgs = args;
+if (args.Length == 0 && !File.Exists("token"))
+{
+    Console.WriteLine("Starte SSO-Login...");
+    Console.WriteLine();
+    effectiveArgs = new[] { "benutzer", "login" };
+}
+
+var builder = CoconaApp.CreateBuilder(effectiveArgs);
 
 var app = builder.Build();
 app.AddSubCommand("vorgang", x => x.AddCommands<VorgangCommands>());
