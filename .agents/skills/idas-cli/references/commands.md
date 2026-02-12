@@ -424,6 +424,28 @@ idas werteliste put [options]
 
 ---
 
+### beleg
+
+Manage Belege (documents).
+
+**Subcommands:**
+- `list` - List documents with filtering options
+
+**beleg list:**
+```
+idas beleg list [options]
+```
+
+Options:
+- `--jahr <Int32>` - Filter by year (0 = all years)
+- `--belegart <String>` - Filter by document type (e.g., AB, Angebot, Rechnung)
+- `--include-archive=<true|false>` - Include archived documents (default: True)
+- `--format <String>` - Output format: json or csv (default: json)
+- `--separator <String>` - CSV separator (default: ;)
+- `--filename <String>` - Save output to file
+
+---
+
 ### mcp
 
 Model Context Protocol server commands.

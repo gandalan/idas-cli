@@ -214,6 +214,11 @@ dotnet run -- benutzer login --user <username> --password <password> --appguid <
 - `vorgang archive-bulk` - Archive multiple Vorgänge
 - `vorgang activate` - Activate a Vorgang
 
+### Document Commands
+
+**Beleg (Documents):**
+- `beleg list` - List documents with filtering options
+
 ### MCP Server Commands
 
 **Model Context Protocol:**
@@ -235,6 +240,13 @@ All commands support:
 - `--include-others-data=<true|false>` - Include others' data (default: true)
 - `--include-asp=<true|false>` - Include ASP properties (default: true)
 - `--include-additional-properties=<true|false>` - Include additional properties (default: true)
+
+**Beleg list filtering:**
+- `--jahr <Int32>` - Filter by year (0 = all)
+- `--belegart <String>` - Filter by document type (e.g., AB, Angebot, Rechnung)
+- `--include-archive=<true|false>` - Include archived (default: true)
+- `--format <String>` - Output format: json or csv (default: json)
+- `--separator <String>` - CSV separator (default: ;)
 
 ## Working with Data
 
@@ -342,6 +354,16 @@ This error occurs when the CLI cannot find authentication credentials. Solutions
 
 # Using dotnet run
 dotnet run -- vorgang list --jahr 2024
+```
+
+### List all AB-Belege from 2024
+
+```bash
+# Using executable
+./dist/idas beleg list --jahr 2024 --belegart AB
+
+# Using dotnet run
+dotnet run -- beleg list --jahr 2024 --belegart AB
 ```
 
 ### Get a specific contact
