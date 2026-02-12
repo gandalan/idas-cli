@@ -23,6 +23,7 @@ app.AddSubCommand("uidefinition", x => x.AddCommands<UIDefinitionCommands>());
 app.AddSubCommand("konfigsatz", x => x.AddCommands<KonfigSatzCommands>());
 app.AddSubCommand("werteliste", x => x.AddCommands<WertelisteCommands>());
 app.AddSubCommand("mcp", x => x.AddCommands<McpServerCommand>());
+app.AddSubCommand("beleg", x => x.AddCommands<BelegCommands>());
 app.Run();
 
 public record CommonParameters(
