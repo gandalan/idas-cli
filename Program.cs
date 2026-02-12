@@ -2,6 +2,41 @@ using Cocona;
 
 var exeDir = AppContext.BaseDirectory;
 var dotenv = Path.Combine(exeDir, ".env");
+var dotenvSample = Path.Combine(exeDir, ".env.sample");
+
+// First-Run Setup: if .env doesn't exist but sample does, ask user for config
+if (!File.Exists(dotenv) && File.Exists(dotenvSample))
+{
+    Console.WriteLine("Ersteinrichtung - keine .env Konfiguration gefunden.");
+    Console.WriteLine();
+    
+    Console.Write("IDAS App Token (Guid von Gandalan): ");
+    var appToken = Console.ReadLine()?.Trim();
+    
+    if (string.IsNullOrWhiteSpace(appToken) || !Guid.TryParse(appToken, out _))
+    {
+        Console.WriteLine("Fehler: Kein gültiger App Token angegeben.");
+        Environment.Exit(1);
+        return;
+    }
+    
+    Console.Write("Environment (dev/staging/produktiv) [dev]: ");
+    var env = Console.ReadLine()?.Trim();
+    if (string.IsNullOrEmpty(env)) env = "dev";
+    
+    File.WriteAllText(dotenv, $"IDAS_APP_TOKEN={appToken}\nIDAS_ENV={env}\n");
+    Console.WriteLine();
+    Console.WriteLine("✓ Konfiguration gespeichert in .env");
+    Console.WriteLine();
+    
+    // If called without arguments and no token file exists, auto-start login
+    if (args.Length == 0 && !File.Exists("token"))
+    {
+        Console.WriteLine("Starte SSO-Login...");
+        args = new[] { "benutzer", "login" };
+    }
+}
+
 DotEnv.Load(dotenv);
 
 var builder = CoconaApp.CreateBuilder();

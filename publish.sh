@@ -50,8 +50,10 @@ for PLATFORM in "${PLATFORMS[@]}"; do
         -p:Version="${VERSION}" \
         -o "${PUBLISH_DIR}"
     
-    # Copy README to publish directory
+    # Copy README, .env.sample and .agents folder to publish directory
     cp "${PROJECT_DIR}/README.md" "${PUBLISH_DIR}/"
+    cp "${PROJECT_DIR}/.env.sample" "${PUBLISH_DIR}/"
+    cp -r "${PROJECT_DIR}/.agents" "${PUBLISH_DIR}/"
     
     # Package based on platform
     echo "Packaging..."
@@ -73,7 +75,6 @@ for PLATFORM in "${PLATFORMS[@]}"; do
         # Copy artifacts to dist folder (Linux)
         echo "Copying Linux artifacts to dist/..."
         cp "${PUBLISH_DIR}/idas" "${DIST_DIR}/idas-linux-x64"
-        cp "${PUBLISH_DIR}/README.md" "${DIST_DIR}/README-linux.md"
     fi
 done
 

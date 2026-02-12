@@ -84,9 +84,16 @@ foreach ($Platform in $Platforms) {
         throw "dotnet publish failed for $Platform"
     }
     
-    # Copy README to publish directory
+    # Copy README, .env.sample and .agents folder to publish directory
     $ReadmePath = Join-Path $ProjectDir "README.md"
     Copy-Item -Path $ReadmePath -Destination $PublishDir -Force
+    
+    $EnvSamplePath = Join-Path $ProjectDir ".env.sample"
+    Copy-Item -Path $EnvSamplePath -Destination $PublishDir -Force
+    
+    $AgentsDir = Join-Path $ProjectDir ".agents"
+    $AgentsDest = Join-Path $PublishDir ".agents"
+    Copy-Item -Path $AgentsDir -Destination $AgentsDest -Recurse -Force
     
     # Package based on platform
     Write-Host "Packaging..."
@@ -124,9 +131,6 @@ foreach ($Platform in $Platforms) {
         $LinuxBinary = Join-Path $PublishDir "idas"
         $LinuxDest = Join-Path $DistDir "idas-linux-x64"
         Copy-Item -Path $LinuxBinary -Destination $LinuxDest -Force
-        
-        $ReadmeLinux = Join-Path $DistDir "README-linux.md"
-        Copy-Item -Path $ReadmePath -Destination $ReadmeLinux -Force
     }
 }
 
