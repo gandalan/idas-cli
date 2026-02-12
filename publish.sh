@@ -61,10 +61,19 @@ for PLATFORM in "${PLATFORMS[@]}"; do
         # Create zip for Windows
         (cd "${PUBLISH_DIR}" && zip -r "${DIST_DIR}/${ARCHIVE_NAME}.zip" .)
         echo "Created: ${DIST_DIR}/${ARCHIVE_NAME}.zip"
+        
+        # Copy artifacts to dist folder (Windows)
+        echo "Copying Windows artifacts to dist/..."
+        cp -r "${PUBLISH_DIR}"/* "${DIST_DIR}/"
     else
         # Create tar.gz for Linux/macOS
         (cd "${PUBLISH_DIR}" && tar -czvf "${DIST_DIR}/${ARCHIVE_NAME}.tar.gz" .)
         echo "Created: ${DIST_DIR}/${ARCHIVE_NAME}.tar.gz"
+        
+        # Copy artifacts to dist folder (Linux)
+        echo "Copying Linux artifacts to dist/..."
+        cp "${PUBLISH_DIR}/idas" "${DIST_DIR}/idas-linux-x64"
+        cp "${PUBLISH_DIR}/README.md" "${DIST_DIR}/README-linux.md"
     fi
 done
 
