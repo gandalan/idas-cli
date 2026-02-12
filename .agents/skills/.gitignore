@@ -1,0 +1,6 @@
+# Skill packages (build artifacts)
+*.skill
+
+# Temporary files
+*.tmp
+*.bak
