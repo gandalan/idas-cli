@@ -8,84 +8,73 @@ using IDAS.Cli.SSO;
 
 public class BenutzerCommands : CommandsBase
 {
-    [Command("login")]
+    [Command("login", Description = "Login using Single Sign-On (SSO)")]
     public async Task Login(
-        [Option("appguid", Description = "AppGuid (provided by Gandalan)")] Guid? appGuid,
-        [Option("env", Description = "Environment (dev, staging, produktiv)")] string? env)
+        [Option("appguid", Description = "AppGuid (provided by Gandalan or from .env as IDAS_APP_TOKEN)")] Guid? appGuid,
+        [Option("env", Description = "Environment (dev, staging, produktiv) or from .env as IDAS_ENV")] string? env,
+        [Option("timeout", Description = "Timeout in seconds for SSO callback")] int timeoutSeconds = 60)
     {
         env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
         appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
 
         if (appGuid == Guid.Empty)
         {
-            Console.WriteLine("Please provide appGuid either as command line parameter or via IDAS_APP_TOKEN environment variable.");
+            Console.WriteLine("Please provide appGuid either as command line parameter or in the .env file (IDAS_APP_TOKEN).");
             return;
         }
 
-        await WebApiConfigurations.InitializeAsync(appGuid.Value);
-        var settings = WebApiConfigurations.ByName(env);
-
-        using var server = new SsoCallbackServer();
-        await server.StartAsync();
-
-        var redirectUrl = Uri.EscapeDataString(server.CallbackUrl + "?token=%token%");
-        var idasUri = new Uri(settings.IDASUrl.TrimEnd('/'));
-        var baseUrl = $"{idasUri.Scheme}://{idasUri.Host}";
-        if (!idasUri.IsDefaultPort)
-            baseUrl += $":{idasUri.Port}";
-        var ssoUrl = $"{baseUrl}/SSO?a={appGuid}&r={redirectUrl}";
-        
-        Process.Start(new ProcessStartInfo(ssoUrl) { UseShellExecute = true });
-        Console.WriteLine("Browser geöffnet. Bitte im Browser einloggen...");
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
-        string token;
         try
         {
-            token = await server.WaitForTokenAsync(cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine("Login timeout - no token received within 120 seconds.");
-            return;
-        }
-        
-        // Create minimal auth token with the received token
-        settings.AuthToken = new UserAuthTokenDTO 
-        { 
-            Token = Guid.Parse(token),
-            AppToken = appGuid.Value
-        };
+            // Initialize WebApiConfigurations
+            await WebApiConfigurations.InitializeAsync(appGuid.Value);
+            var settings = WebApiConfigurations.ByName(env);
 
-        var client = new WebRoutinenBase(settings);
-        client.IgnoreOnErrorOccured = true;
-        
-        try
-        {
-            // Use RefreshTokenAsync to get the full UserAuthTokenDTO from the server
-            var refreshedToken = await client.RefreshTokenAsync(settings.AuthToken.Token);
-            
-            if (refreshedToken != null)
+            // Use the library's SSO login service
+            var ssoService = new Gandalan.IDAS.WebApi.Client.SSO.SsoLoginService(settings, timeoutSeconds);
+
+            Console.WriteLine("Starting SSO login flow...");
+            Console.WriteLine($"SSO URL: {ssoService.BuildSsoUrl(appGuid.Value)}");
+
+            // Perform SSO login
+            var result = await ssoService.LoginAsync(appGuid.Value, msg => SafeLog(msg));
+
+            if (result.Success)
             {
-                settings.AuthToken = refreshedToken;
-                Console.WriteLine($"Login successful: User={settings.AuthToken.Benutzer?.Benutzername} Mandant={settings.AuthToken.Mandant?.Name}, Environment={settings.FriendlyName}");
-                JsonSerializerOptions options = new()
-                {
-                    WriteIndented = true
-                };
-                await File.WriteAllTextAsync("token", JsonSerializer.Serialize(settings.AuthToken, options));
+                settings.AuthToken = result.AuthToken;
+                WebApiConfigurations.Save(settings);
+
+                // Save token to file for CLI persistence
+                await SaveTokenToFileAsync(result.AuthToken);
+
+                Console.WriteLine($"SSO Login successful: User={result.UserName} Mandant={result.MandantName}");
             }
             else
             {
-                Console.WriteLine("Login failed - could not refresh token");
-                Console.WriteLine("The SSO token might not be compatible with the API login.");
+                Console.WriteLine($"SSO Login failed: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Login error: {ex.Message}");
-            if (ex.InnerException != null)
-                Console.WriteLine($"Inner: {ex.InnerException.Message}");
+            Console.WriteLine($"SSO Login failed: {ex.Message}");
+        }
+    }
+
+    [Command("logout", Description = "Logout and revoke the current session token")]
+    public async Task Logout(
+        [Option("appguid", Description = "AppGuid (provided by Gandalan or from .env as IDAS_APP_TOKEN)")] Guid? appGuid,
+        [Option("env", Description = "Environment (dev, staging, produktiv) or from .env as IDAS_ENV")] string? env)
+    {
+        try
+        {
+            await LogoutAsync(env, appGuid);
+        }
+        catch (InvalidOperationException ex)
+        {
+            SafeLog($"Logout failed: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            SafeLog($"Logout failed: {ex.Message}");
         }
     }
 
@@ -103,8 +92,16 @@ public class BenutzerCommands : CommandsBase
         [Argument("email", Description = "User's email address")]
         string email)
     {
+        // Get minimal settings without requiring full authentication
         var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
         var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+
+        if (appGuid == Guid.Empty)
+        {
+            Console.WriteLine("Please provide appGuid via IDAS_APP_TOKEN environment variable.");
+            return;
+        }
+
         await WebApiConfigurations.InitializeAsync(appGuid);
         var settings = WebApiConfigurations.ByName(env);
 
@@ -134,5 +131,20 @@ public class BenutzerCommands : CommandsBase
 
         await client.PasswortAendernAsync(passwortAendernData);
         Console.WriteLine($"Password successfully changed for user {username}");
+    }
+
+    private async Task SaveTokenToFileAsync(UserAuthTokenDTO? authToken)
+    {
+        if (authToken == null)
+        {
+            return;
+        }
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        await File.WriteAllTextAsync("token", JsonSerializer.Serialize(authToken, options));
     }
 }

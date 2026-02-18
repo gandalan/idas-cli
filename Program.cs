@@ -1,11 +1,13 @@
 using Cocona;
 
 var exeDir = AppContext.BaseDirectory;
-var dotenv = Path.Combine(exeDir, ".env");
+var workDir = Directory.GetCurrentDirectory();
+var dotenvLocal = Path.Combine(workDir, ".env");
+var dotenvExe = Path.Combine(exeDir, ".env");
 var dotenvSample = Path.Combine(exeDir, ".env.sample");
 
-// First-Run Setup: if .env doesn't exist but sample does, ask user for config
-if (!File.Exists(dotenv) && File.Exists(dotenvSample))
+// First-Run Setup: if no .env exists but sample does, ask user for config
+if (!File.Exists(dotenvLocal) && !File.Exists(dotenvExe) && File.Exists(dotenvSample))
 {
     Console.WriteLine("Ersteinrichtung - keine .env Konfiguration gefunden.");
     Console.WriteLine();
@@ -24,13 +26,18 @@ if (!File.Exists(dotenv) && File.Exists(dotenvSample))
     var env = Console.ReadLine()?.Trim();
     if (string.IsNullOrEmpty(env)) env = "dev";
     
-    File.WriteAllText(dotenv, $"IDAS_APP_TOKEN={appToken}\nIDAS_ENV={env}\n");
+    File.WriteAllText(dotenvExe, $"IDAS_APP_TOKEN={appToken}\nIDAS_ENV={env}\n");
     Console.WriteLine();
     Console.WriteLine("✓ Konfiguration gespeichert in .env");
     Console.WriteLine();
 }
 
-DotEnv.Load(dotenv);
+// Load .env files - local takes precedence over exe directory
+DotEnv.Load(dotenvLocal);
+if (!string.Equals(dotenvLocal, dotenvExe, StringComparison.OrdinalIgnoreCase))
+{
+    DotEnv.Load(dotenvExe);
+}
 
 // If called without arguments and no token file exists, auto-start login
 string[] effectiveArgs = args;
