@@ -2,6 +2,26 @@
 
 Kommandozeilen-Tool für den Zugriff auf IDAS/i3 ERP System.
 
+## Breaking Changes
+
+### v0.3.2
+
+- **Environment Variable Renamed**: `IDAS_APP_TOKEN` → `IDAS_APPGUID`
+- **Environment Values Changed**: 
+  - `dev`, `staging`, `produktiv` → `dev`, `stg`, `prod`
+  - Default changed from `dev` to `prod`
+
+Update your `.env` file:
+```bash
+# Old (v1.x)
+IDAS_APP_TOKEN=your-token
+IDAS_ENV=dev
+
+# New (v0.3.2+)
+IDAS_APPGUID=your-token
+IDAS_ENV=dev  # or stg, prod (default is now prod)
+```
+
 ## Installation
 
 Laden Sie das aktuelle Release herunter und entpacken Sie das Programm in einen beliebigen Ordner. 
@@ -19,7 +39,7 @@ Die Einrichtung ist unabhängig davon, ob Sie den Build selbst erstellt oder her
 1. `.env` Datei im Programmverzeichnis erstellen:
 
 ```
-IDAS_APP_TOKEN=app-token-guid
+IDAS_APPGUID=app-token-guid
 IDAS_ENV=dev
 ```
 

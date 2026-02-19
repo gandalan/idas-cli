@@ -37,12 +37,12 @@ public class CommandsBase
 
     protected async Task<IWebApiConfig> getSettings(Guid? appGuid = null, string? env = null)
     {
-        env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
-        appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+        env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
 
         if (appGuid == Guid.Empty)
         {
-            throw new InvalidOperationException("Please provide a valid AppGuid via --appguid parameter or IDAS_APP_TOKEN environment variable");
+            throw new InvalidOperationException("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
         }
 
         // Initialize the WebApiConfigurations if not already done for this app token
@@ -135,12 +135,12 @@ public class CommandsBase
 
     protected async Task LogoutAsync(string? env = null, Guid? appGuid = null)
     {
-        env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
-        appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+        env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
 
         if (appGuid == Guid.Empty)
         {
-            throw new InvalidOperationException("Please provide a valid AppGuid via --appguid parameter or IDAS_APP_TOKEN environment variable");
+            throw new InvalidOperationException("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
         }
 
         await InitializeWebApiConfigurationsAsync(appGuid.Value);

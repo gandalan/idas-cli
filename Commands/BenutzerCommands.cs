@@ -10,23 +10,21 @@ public class BenutzerCommands : CommandsBase
 {
     [Command("login", Description = "Login using Single Sign-On (SSO)")]
     public async Task Login(
-        [Option("appguid", Description = "AppGuid (provided by Gandalan or from .env as IDAS_APP_TOKEN)")] Guid? appGuid,
-        [Option("env", Description = "Environment (dev, staging, produktiv) or from .env as IDAS_ENV")] string? env,
         [Option("timeout", Description = "Timeout in seconds for SSO callback")] int timeoutSeconds = 60)
     {
-        env = env ?? Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
-        appGuid = appGuid ?? Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+        var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
 
         if (appGuid == Guid.Empty)
         {
-            Console.WriteLine("Please provide appGuid either as command line parameter or in the .env file (IDAS_APP_TOKEN).");
+            Console.WriteLine("Please provide appGuid via IDAS_APPGUID environment variable or --appguid flag.");
             return;
         }
 
         try
         {
             // Initialize WebApiConfigurations
-            await WebApiConfigurations.InitializeAsync(appGuid.Value);
+            await WebApiConfigurations.InitializeAsync(appGuid);
             var settings = WebApiConfigurations.ByName(env);
             if (settings == null)
             {
@@ -55,7 +53,7 @@ public class BenutzerCommands : CommandsBase
                 }
             }
 
-            var result = await ssoService.LoginAsync(appGuid.Value, msg => SafeLog(msg), OpenBrowser);
+            var result = await ssoService.LoginAsync(appGuid, msg => SafeLog(msg), OpenBrowser);
 
             if (result.Success)
             {
@@ -79,13 +77,11 @@ public class BenutzerCommands : CommandsBase
     }
 
     [Command("logout", Description = "Logout and revoke the current session token")]
-    public async Task Logout(
-        [Option("appguid", Description = "AppGuid (provided by Gandalan or from .env as IDAS_APP_TOKEN)")] Guid? appGuid,
-        [Option("env", Description = "Environment (dev, staging, produktiv) or from .env as IDAS_ENV")] string? env)
+    public async Task Logout()
     {
         try
         {
-            await LogoutAsync(env, appGuid);
+            await LogoutAsync();
         }
         catch (InvalidOperationException ex)
         {
@@ -112,12 +108,12 @@ public class BenutzerCommands : CommandsBase
         string email)
     {
         // Get minimal settings without requiring full authentication
-        var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "dev";
-        var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APP_TOKEN") ?? Guid.Empty.ToString());
+        var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
 
         if (appGuid == Guid.Empty)
         {
-            Console.WriteLine("Please provide appGuid via IDAS_APP_TOKEN environment variable.");
+            Console.WriteLine("Please provide appGuid via IDAS_APPGUID environment variable.");
             return;
         }
 
