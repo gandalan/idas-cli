@@ -28,15 +28,34 @@ public class BenutzerCommands : CommandsBase
             // Initialize WebApiConfigurations
             await WebApiConfigurations.InitializeAsync(appGuid.Value);
             var settings = WebApiConfigurations.ByName(env);
+            if (settings == null)
+            {
+                Console.WriteLine($"Environment '{env}' not found.");
+                return;
+            }
 
             // Use the library's SSO login service
             var ssoService = new Gandalan.IDAS.WebApi.Client.SSO.SsoLoginService(settings, timeoutSeconds);
 
             Console.WriteLine("Starting SSO login flow...");
-            Console.WriteLine($"SSO URL: {ssoService.BuildSsoUrl(appGuid.Value)}");
 
-            // Perform SSO login
-            var result = await ssoService.LoginAsync(appGuid.Value, msg => SafeLog(msg));
+            bool OpenBrowser(string url)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    SafeLog($"Could not open browser automatically: {ex.Message}");
+                    SafeLog("Please open the SSO URL manually to continue the login.");
+                    SafeLog($"SSO URL: {url}");
+                    return false;
+                }
+            }
+
+            var result = await ssoService.LoginAsync(appGuid.Value, msg => SafeLog(msg), OpenBrowser);
 
             if (result.Success)
             {
