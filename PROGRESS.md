@@ -47,10 +47,16 @@
   - Updated AVCommands.cs to remove Cocona usings and attributes
   - Build verified - no AV-related errors
 
+- [x] Task-011: WarengruppeCommands Migration
+  - Created WarengruppeCommandBuilder.cs with 'list' subcommand
+  - list: no args, uses CommonParameters
+  - Updated WarengruppeCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Warengruppe-related errors
+
 ## Current Iteration
 
 - Iteration: 4
-- Working on: Task-008
+- Working on: Task-011
 - Started: 2026-03-04
 
 ## Task Status
@@ -67,7 +73,7 @@
 | Task-008 | AVCommands Migration | ✅ Complete | 1 |
 | Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
 | Task-010 | LagerbuchungCommands Migration | ⏳ Pending | - |
-| Task-011 | WarengruppeCommands Migration | ⏳ Pending | - |
+| Task-011 | WarengruppeCommands Migration | ✅ Complete | 1 |
 | Task-012 | SerieCommands and RollenCommands Migration | ⏳ Pending | - |
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
 | Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ⏳ Pending | - |

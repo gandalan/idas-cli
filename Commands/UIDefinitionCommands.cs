@@ -1,11 +1,9 @@
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
 public class UIDefinitionCommands : CommandsBase
 {
-    [Command("list", Description = "Get all UI definitions")]
     public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -13,20 +11,17 @@ public class UIDefinitionCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetAllAsync());
     }
 
-    [Command("get")]
     public async Task GetUIDefinition(
-        [Argument("guid", Description = "UIDefinition GUID")]
-        Guid guid,
-        CommonParameters commonParams)
+        CommonParameters commonParams,
+        Guid guid)
     {
         var settings = await getSettings();
         UIWebRoutinen client = new(settings);
         await dumpOutput(commonParams, await client.GetAsync(guid));
     }
 
-    [Command("put")]
     public async Task PutUIDefinition(
-        [Argument("file", Description = "JSON file with UIDefinition data")]
+        CommonParameters commonParams,
         string file)
     {
         var settings = await getSettings();
