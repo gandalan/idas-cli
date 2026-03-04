@@ -82,10 +82,20 @@
   - Updated gSQLCommands.cs to remove Cocona usings and attributes
   - Build verified - no gSQL-related errors
 
+- [x] Task-016: McpServerCommand Migration
+  - Created McpServerCommandBuilder.cs with 'serve' subcommand
+  - serve: no args, no CommonParameters
+  - Sets CommandsBase.IsSilentMode = true
+  - Calls McpToolRegistrar.ScanAndRegisterTools(verbose: false)
+  - Creates Host with McpServer, WithStdioServerTransport
+  - Updated McpServerCommand.cs to remove Cocona using and [Command] attributes
+  - Removed GenerateTools() method entirely (including #if DEBUG block)
+  - Build verified - no McpServer-related errors
+
 ## Current Iteration
 
-- Iteration: 6
-- Working on: Task-014
+- Iteration: 7
+- Working on: Task-016
 - Started: 2026-03-04
 
 ## Task Status
@@ -107,7 +117,7 @@
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
 | Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ✅ Complete | 1 |
 | Task-015 | gSQLCommands Migration | ✅ Complete | 1 |
-| Task-016 | McpServerCommand Migration (no generate-tools) | ⏳ Pending | - |
+| Task-016 | McpServerCommand Migration (no generate-tools) | ✅ Complete | 1 |
 | Task-017 | Program.cs Rewrite | ⏳ Pending | - |
 | Task-018 | Runtime MCP Tool Registration (NEW) | ⏳ Pending | - |
 | Task-018b | Add CliCommand Attributes to All Methods (NEW) | ⏳ Pending | - |
