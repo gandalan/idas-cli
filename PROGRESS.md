@@ -254,3 +254,10 @@
 - All option names now use camelCase format (--includeArchive instead of --include-archive)
 - Removed kebab-case conversion logic from MCP handlers
 - This ensures consistency across all CLI options
+
+- [x] Task-021: Fix RollenCommands Build Errors
+  - Fixed RollenCommandBuilder calling non-existent `ListRollen` method → changed to `List`
+  - Removed `Put` method from RollenCommands (RollenWebRoutinen doesn't have SaveAsync method)
+  - Updated RollenCommandBuilder to remove put subcommand
+  - Build verified - 0 errors, 1 warning (null reference in Get method) ✅
+
