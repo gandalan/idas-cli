@@ -17,10 +17,15 @@
   - Updated BenutzerCommands.cs to remove Cocona attributes
   - Build verified - no Benutzer-related errors
 
+- [x] Task-005: KontaktCommands Migration
+  - Created KontaktCommandBuilder.cs with 4 subcommands (list, get, put, sample)
+  - Updated KontaktCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Kontakt-related errors
+
 ## Current Iteration
 
-- Iteration: 2
-- Working on: Task-003
+- Iteration: 3
+- Working on: Task-006
 - Started: 2026-03-04
 
 ## Task Status
@@ -31,7 +36,7 @@
 | Task-002 | GlobalOptions and CommonParameters Setup | ✅ Complete | 1 |
 | Task-003 | VorgangCommands Migration | ✅ Complete | 1 |
 | Task-004 | BenutzerCommands Migration | ✅ Complete | 1 |
-| Task-005 | KontaktCommands Migration | ⏳ Pending | - |
+| Task-005 | KontaktCommands Migration | ✅ Complete | 1 |
 | Task-006 | BelegCommands Migration | ⏳ Pending | - |
 | Task-007 | ArtikelCommands Migration | ⏳ Pending | - |
 | Task-008 | AVCommands Migration | ⏳ Pending | - |

@@ -1,11 +1,9 @@
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
 public class KontaktCommands : CommandsBase
 {
-    [Command("list")]
     public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -13,10 +11,8 @@ public class KontaktCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetKontakteAsync());
     }
 
-    [Command("get")]
     public async Task GetKontakt(
         CommonParameters commonParams,
-        [Argument("kontakt", Description = "Kontakt-GUID")]
         Guid kontakt)
     {
         var settings = await getSettings();
@@ -24,10 +20,8 @@ public class KontaktCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetKontaktAsync(kontakt));
     }
 
-    [Command("put")]
     public async Task PutKontakt(
         CommonParameters commonParams,
-        [Argument("file", Description = "JSON file with Kontakt data")]
         string file)
     {
         var settings = await getSettings();
@@ -36,7 +30,6 @@ public class KontaktCommands : CommandsBase
         Console.WriteLine(JsonSerializer.Serialize(await client.SaveKontaktAsync(kontakt)));
     }
 
-    [Command("sample", Description = "Create a sample KontaktDTO")]
     public async Task CreateSample(CommonParameters commonParams) => await dumpOutput(commonParams, new KontaktDTO()
     {
         KontaktGuid = Guid.NewGuid(),
