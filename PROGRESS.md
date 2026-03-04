@@ -63,10 +63,18 @@
   - Updated both Commands files to remove Cocona usings and attributes
   - Build verified - no Serie or Rollen-related errors
 
+- [x] Task-015: gSQLCommands Migration
+  - Created GSQLCommandBuilder.cs with 3 subcommands: list, get, reset
+  - list: no args, uses CommonParameters
+  - get: beleg argument (Guid), uses CommonParameters (internally overrides Format to "gsql")
+  - reset: since argument (DateTime), NO CommonParameters (just uses settings)
+  - Updated gSQLCommands.cs to remove Cocona usings and attributes
+  - Build verified - no gSQL-related errors
+
 ## Current Iteration
 
-- Iteration: 5
-- Working on: Task-012
+- Iteration: 6
+- Working on: Task-015
 - Started: 2026-03-04
 
 ## Task Status
@@ -87,7 +95,7 @@
 | Task-012 | SerieCommands and RollenCommands Migration | ✅ Complete | 1 |
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
 | Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ⏳ Pending | - |
-| Task-015 | gSQLCommands Migration | ⏳ Pending | - |
+| Task-015 | gSQLCommands Migration | ✅ Complete | 1 |
 | Task-016 | McpServerCommand Migration (no generate-tools) | ⏳ Pending | - |
 | Task-017 | Program.cs Rewrite | ⏳ Pending | - |
 | Task-018 | Runtime MCP Tool Registration (NEW) | ⏳ Pending | - |
