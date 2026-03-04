@@ -295,9 +295,29 @@ public class DynamicMcpToolHandler
         if (underlyingType != null)
             targetType = underlyingType;
 
+        // Handle JsonElement - extract actual value first
+        if (value is JsonElement jsonElement)
+        {
+            switch (jsonElement.ValueKind)
+            {
+                case JsonValueKind.True:
+                    return "true";
+                case JsonValueKind.False:
+                    return "false";
+                case JsonValueKind.Number:
+                    return jsonElement.GetRawText();
+                case JsonValueKind.String:
+                    return jsonElement.GetString() ?? "";
+                case JsonValueKind.Null:
+                    return "";
+                default:
+                    return jsonElement.GetRawText();
+            }
+        }
+
         // Handle boolean specially - use lowercase
-        if (targetType == typeof(bool))
-            return ((bool)value).ToString().ToLowerInvariant();
+        if (targetType == typeof(bool) && value is bool b)
+            return b.ToString().ToLowerInvariant();
 
         // Handle DateTime with ISO format
         if (targetType == typeof(DateTime) && value is DateTime dt)
@@ -310,12 +330,6 @@ public class DynamicMcpToolHandler
         // Handle Guid
         if (targetType == typeof(Guid) && value is Guid g)
             return g.ToString("D");
-
-        // Handle JsonElement
-        if (value is JsonElement jsonElement)
-        {
-            return jsonElement.ToString();
-        }
 
         return Convert.ToString(value) ?? "";
     }

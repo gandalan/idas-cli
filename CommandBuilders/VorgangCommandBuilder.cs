@@ -9,10 +9,10 @@ public static class VorgangCommandBuilder
         // list subcommand
         var listCmd = new Command("list", "List all Vorgänge");
         var jahrOption = new Option<int?>("--jahr", "Year to list (0 = all years)");
-        var includeArchiveOption = new Option<bool>("--include-archive", () => true, "Include archived Vorgänge");
-        var includeOthersDataOption = new Option<bool>("--include-others-data", () => true, "Include data from other users");
-        var includeAspOption = new Option<bool>("--include-asp", () => true, "Include application specific properties");
-        var includeAdditionalPropertiesOption = new Option<bool>("--include-additional-properties", () => true, "Include additional properties");
+        var includeArchiveOption = new Option<bool>("--includeArchive", () => true, "Include archived Vorgänge");
+        var includeOthersDataOption = new Option<bool>("--includeOthersData", () => true, "Include data from other users");
+        var includeAspOption = new Option<bool>("--includeASP", () => true, "Include application specific properties");
+        var includeAdditionalPropertiesOption = new Option<bool>("--includeAdditionalProperties", () => true, "Include additional properties");
 
         listCmd.AddOption(jahrOption);
         listCmd.AddOption(includeArchiveOption);

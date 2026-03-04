@@ -13,7 +13,7 @@ public static class BelegCommandBuilder
         var separatorOption = new Option<string>("--separator", () => ";", "CSV-Trennzeichen");
         var belegartOption = new Option<string?>("--belegart", "Belegart filtern (z.B. AB, Angebot, Rechnung)");
         var filenameOption = new Option<string?>("--filename", "Output in Datei speichern");
-        var includeArchiveOption = new Option<bool>("--include-archive", () => true, "Archivierte Vorgänge inkludieren");
+        var includeArchiveOption = new Option<bool>("--includeArchive", () => true, "Archivierte Vorgänge inkludieren");
 
         listCmd.AddOption(jahrOption);
         listCmd.AddOption(formatOption);

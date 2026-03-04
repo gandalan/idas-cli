@@ -16,26 +16,9 @@ public static class McpServerCommandBuilder
 
         serveCmd.SetHandler(async () =>
         {
-            // Enable silent mode to suppress console output from commands
-            CommandsBase.IsSilentMode = true;
-
-            // Scan and register all commands as MCP tools (suppress verbose output)
-            McpToolRegistrar.ScanAndRegisterTools(verbose: false);
-
-            var builder = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddMcpServer()
-                        .WithStdioServerTransport()
-                        .WithToolsFromAssembly();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    // Disable all console logging for MCP server
-                    logging.ClearProviders();
-                });
-
-            await builder.Build().RunAsync();
+            // Use the McpServerCommand class directly
+            var serverCommand = new McpServerCommand();
+            await serverCommand.Serve();
         });
 
         cmd.AddCommand(serveCmd);

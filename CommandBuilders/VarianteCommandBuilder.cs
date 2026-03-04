@@ -21,8 +21,8 @@ public static class VarianteCommandBuilder
         // get subcommand
         var getCmd = new Command("get", "Get a Variante by GUID");
         var guidArgument = new Argument<Guid>("guid", "Variante GUID");
-        var includeKonfigsOption = new Option<bool>("--include-konfigs", () => true, "Include configurations");
-        var includeUIDefsOption = new Option<bool>("--include-uidefs", () => true, "Include UI definitions");
+        var includeKonfigsOption = new Option<bool>("--includeKonfigs", () => true, "Include configurations");
+        var includeUIDefsOption = new Option<bool>("--includeUIDefs", () => true, "Include UI definitions");
 
         getCmd.AddArgument(guidArgument);
         getCmd.AddOption(includeKonfigsOption);

@@ -8,7 +8,7 @@ public static class WertelisteCommandBuilder
 
         // list subcommand
         var listCmd = new Command("list", "Get all value lists");
-        var includeAutoListOption = new Option<bool>("--include-auto", () => true, "Include auto-generated value lists");
+        var includeAutoListOption = new Option<bool>("--includeAuto", () => true, "Include auto-generated value lists");
         listCmd.AddOption(includeAutoListOption);
 
         listCmd.SetHandler(async (format, filename, includeAuto) =>
@@ -23,7 +23,7 @@ public static class WertelisteCommandBuilder
         // get subcommand
         var getCmd = new Command("get", "Get a Werteliste by GUID");
         var guidArgument = new Argument<Guid>("guid", "Werteliste GUID");
-        var includeAutoGetOption = new Option<bool>("--include-auto", () => true, "Include auto-generated value lists");
+        var includeAutoGetOption = new Option<bool>("--includeAuto", () => true, "Include auto-generated value lists");
         getCmd.AddArgument(guidArgument);
         getCmd.AddOption(includeAutoGetOption);
 
