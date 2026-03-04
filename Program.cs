@@ -47,6 +47,6 @@ app.AddSubCommand("beleg", x => x.AddCommands<BelegCommands>());
 app.Run();
 
 public record CommonParameters(
-    [Option("format", Description = "Output format")] string Format = "json",
-    [Option("filename", Description = "Dump output to file")] string? FileName = null
-) : ICommandParameterSet;
+    string Format = "json",
+    string? FileName = null
+);
