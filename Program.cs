@@ -1,4 +1,4 @@
-using Cocona;
+using System.CommandLine;
 
 var exeDir = AppContext.BaseDirectory;
 var workDir = Directory.GetCurrentDirectory();
@@ -24,27 +24,32 @@ if (args.Length == 0 && !File.Exists("token"))
     effectiveArgs = new[] { "benutzer", "login" };
 }
 
-var builder = CoconaApp.CreateBuilder(effectiveArgs);
+var rootCommand = new RootCommand("IDAS CLI - Command line interface for IDAS/i3 ERP system");
 
-var app = builder.Build();
-app.AddSubCommand("vorgang", x => x.AddCommands<VorgangCommands>());
-app.AddSubCommand("gsql", x => x.AddCommands<gSQLCommands>());
-app.AddSubCommand("kontakt", x => x.AddCommands<KontaktCommands>());
-app.AddSubCommand("artikel", x => x.AddCommands<ArtikelCommands>());
-app.AddSubCommand("av", x => x.AddCommands<AVCommands>());
-app.AddSubCommand("lagerbestand", x => x.AddCommands<LagerbestandCommands>());
-app.AddSubCommand("lagerbuchung", x => x.AddCommands<LagerbuchungCommands>());
-app.AddSubCommand("warengruppe", x => x.AddCommands<WarengruppeCommands>());
-app.AddSubCommand("benutzer", x => x.AddCommands<BenutzerCommands>());
-app.AddSubCommand("serie", x => x.AddCommands<SerieCommands>());
-app.AddSubCommand("rollen", x => x.AddCommands<RollenCommands>());
-app.AddSubCommand("variante", x => x.AddCommands<VarianteCommands>());
-app.AddSubCommand("uidefinition", x => x.AddCommands<UIDefinitionCommands>());
-app.AddSubCommand("konfigsatz", x => x.AddCommands<KonfigSatzCommands>());
-app.AddSubCommand("werteliste", x => x.AddCommands<WertelisteCommands>());
-app.AddSubCommand("mcp", x => x.AddCommands<McpServerCommand>());
-app.AddSubCommand("beleg", x => x.AddCommands<BelegCommands>());
-app.Run();
+// Add global options
+rootCommand.AddGlobalOption(GlobalOptions.Format);
+rootCommand.AddGlobalOption(GlobalOptions.FileName);
+
+// Add all command builders
+rootCommand.AddCommand(VorgangCommandBuilder.Build());
+rootCommand.AddCommand(GSQLCommandBuilder.Build());
+rootCommand.AddCommand(KontaktCommandBuilder.Build());
+rootCommand.AddCommand(ArtikelCommandBuilder.Build());
+rootCommand.AddCommand(AVCommandBuilder.Build());
+rootCommand.AddCommand(LagerbestandCommandBuilder.Build());
+rootCommand.AddCommand(LagerbuchungCommandBuilder.Build());
+rootCommand.AddCommand(WarengruppeCommandBuilder.Build());
+rootCommand.AddCommand(BenutzerCommandBuilder.Build());
+rootCommand.AddCommand(SerieCommandBuilder.Build());
+rootCommand.AddCommand(RollenCommandBuilder.Build());
+rootCommand.AddCommand(VarianteCommandBuilder.Build());
+rootCommand.AddCommand(UIDefinitionCommandBuilder.Build());
+rootCommand.AddCommand(KonfigSatzCommandBuilder.Build());
+rootCommand.AddCommand(WertelisteCommandBuilder.Build());
+rootCommand.AddCommand(McpServerCommandBuilder.Build());
+rootCommand.AddCommand(BelegCommandBuilder.Build());
+
+return await rootCommand.InvokeAsync(effectiveArgs);
 
 public record CommonParameters(
     string Format = "json",

@@ -40,6 +40,14 @@
   - Updated LagerbestandCommands.cs to remove Cocona usings and attributes
   - Build verified - no Lagerbestand-related errors
 
+- [x] Task-010: LagerbuchungCommands Migration
+  - LagerbuchungCommandBuilder.cs already exists with 3 subcommands (list, put, sample)
+  - list: --from, --till options (DateTime)
+  - put: file argument (string)
+  - sample: no args
+  - Updated LagerbuchungCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Lagerbuchung-related errors
+
 - [x] Task-008: AVCommands Migration
   - Created AVCommandBuilder.cs with 2 subcommands: list, get
   - list: --since option (DateTime?, optional), uses CommonParameters
@@ -94,8 +102,8 @@
 
 ## Current Iteration
 
-- Iteration: 7
-- Working on: Task-016
+- Iteration: 8
+- Working on: Task-010
 - Started: 2026-03-04
 
 ## Task Status
@@ -111,7 +119,7 @@
 | Task-007 | ArtikelCommands Migration | ✅ Complete | 1 |
 | Task-008 | AVCommands Migration | ✅ Complete | 1 |
 | Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
-| Task-010 | LagerbuchungCommands Migration | ⏳ Pending | - |
+| Task-010 | LagerbuchungCommands Migration | ✅ Complete | 1 |
 | Task-011 | WarengruppeCommands Migration | ✅ Complete | 1 |
 | Task-012 | SerieCommands and RollenCommands Migration | ✅ Complete | 1 |
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
