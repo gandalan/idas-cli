@@ -40,10 +40,17 @@
   - Updated LagerbestandCommands.cs to remove Cocona usings and attributes
   - Build verified - no Lagerbestand-related errors
 
+- [x] Task-008: AVCommands Migration
+  - Created AVCommandBuilder.cs with 2 subcommands: list, get
+  - list: --since option (DateTime?, optional), uses CommonParameters
+  - get: pos argument (string, AVPos-GUID or PCode), uses CommonParameters
+  - Updated AVCommands.cs to remove Cocona usings and attributes
+  - Build verified - no AV-related errors
+
 ## Current Iteration
 
-- Iteration: 3
-- Working on: Task-006
+- Iteration: 4
+- Working on: Task-008
 - Started: 2026-03-04
 
 ## Task Status
@@ -57,7 +64,7 @@
 | Task-005 | KontaktCommands Migration | ✅ Complete | 1 |
 | Task-006 | BelegCommands Migration | ✅ Complete | 1 |
 | Task-007 | ArtikelCommands Migration | ✅ Complete | 1 |
-| Task-008 | AVCommands Migration | ⏳ Pending | - |
+| Task-008 | AVCommands Migration | ✅ Complete | 1 |
 | Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
 | Task-010 | LagerbuchungCommands Migration | ⏳ Pending | - |
 | Task-011 | WarengruppeCommands Migration | ⏳ Pending | - |
