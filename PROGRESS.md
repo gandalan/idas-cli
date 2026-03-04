@@ -12,6 +12,11 @@
   - Updated VorgangCommands.cs to remove Cocona attributes
   - Build verified - no Vorgang-related errors
 
+- [x] Task-004: BenutzerCommands Migration
+  - Created BenutzerCommandBuilder.cs with 5 subcommands (login, logout, list, password-reset, change-password)
+  - Updated BenutzerCommands.cs to remove Cocona attributes
+  - Build verified - no Benutzer-related errors
+
 ## Current Iteration
 
 - Iteration: 2
@@ -25,7 +30,7 @@
 | Task-001 | Project File Migration | ⏳ Pending | - |
 | Task-002 | GlobalOptions and CommonParameters Setup | ✅ Complete | 1 |
 | Task-003 | VorgangCommands Migration | ✅ Complete | 1 |
-| Task-004 | BenutzerCommands Migration | ⏳ Pending | - |
+| Task-004 | BenutzerCommands Migration | ✅ Complete | 1 |
 | Task-005 | KontaktCommands Migration | ⏳ Pending | - |
 | Task-006 | BelegCommands Migration | ⏳ Pending | - |
 | Task-007 | ArtikelCommands Migration | ⏳ Pending | - |

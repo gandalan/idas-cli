@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
 using Gandalan.IDAS.WebApi.DTO;
@@ -8,9 +7,7 @@ using IDAS.Cli.SSO;
 
 public class BenutzerCommands : CommandsBase
 {
-    [Command("login", Description = "Login using Single Sign-On (SSO)")]
-    public async Task Login(
-        [Option("timeout", Description = "Timeout in seconds for SSO callback")] int timeoutSeconds = 60)
+    public async Task Login(int timeoutSeconds)
     {
         var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
         var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
@@ -76,7 +73,6 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [Command("logout", Description = "Logout and revoke the current session token")]
     public async Task Logout()
     {
         try
@@ -93,7 +89,6 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [Command("list", Description = "Get the list of own users")]
     public async Task List(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -102,10 +97,7 @@ public class BenutzerCommands : CommandsBase
         await dumpOutput(commonParams, data);
     }
 
-    [Command("password-reset", Description = "Reset password for a user by email")]
-    public async Task PasswordReset(
-        [Argument("email", Description = "User's email address")]
-        string email)
+    public async Task PasswordReset(string email)
     {
         // Get minimal settings without requiring full authentication
         var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
@@ -125,14 +117,7 @@ public class BenutzerCommands : CommandsBase
         Console.WriteLine($"Password reset email has been sent to {email}");
     }
 
-    [Command("change-password", Description = "Change password for the current user")]
-    public async Task ChangePassword(
-        [Argument("username", Description = "Username or email")]
-        string username,
-        [Argument("old-password", Description = "Current password")]
-        string oldPassword,
-        [Argument("new-password", Description = "New password")]
-        string newPassword)
+    public async Task ChangePassword(string username, string oldPassword, string newPassword)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);
