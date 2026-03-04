@@ -1,13 +1,11 @@
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 
 public class AVCommands : CommandsBase
 {
-    [Command("list")]
     public async Task GetList(
         CommonParameters commonParams,
-        [Option("since", Description = "Reset since")] DateTime? since)
+        DateTime? since)
     {
         var settings = await getSettings();
         AVWebRoutinen client = new(settings);
@@ -16,10 +14,8 @@ public class AVCommands : CommandsBase
         await dumpOutput(commonParams, reduced);
     }
 
-    [Command("get")]
     public async Task GetPos(
         CommonParameters commonParams,
-        [Argument("pos", Description = "AVPos-GUID or PCode")]
         string? pos)
     {
         Guid.TryParse(pos, out var guid);

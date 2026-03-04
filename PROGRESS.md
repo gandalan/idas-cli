@@ -28,6 +28,18 @@
   - Updated BelegCommands.cs to remove Cocona usings and attributes
   - Build verified - no Beleg-related errors
 
+- [x] Task-007: ArtikelCommands Migration
+  - Created ArtikelCommandBuilder.cs with 3 subcommands (list, put, sample)
+  - Updated ArtikelCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Artikel-related errors
+
+- [x] Task-009: LagerbestandCommands Migration
+  - Created LagerbestandCommandBuilder.cs with 'list' subcommand
+  - Added --since option (DateTime?, optional)
+  - Uses GlobalOptions for --format and --filename
+  - Updated LagerbestandCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Lagerbestand-related errors
+
 ## Current Iteration
 
 - Iteration: 3
@@ -44,9 +56,9 @@
 | Task-004 | BenutzerCommands Migration | ✅ Complete | 1 |
 | Task-005 | KontaktCommands Migration | ✅ Complete | 1 |
 | Task-006 | BelegCommands Migration | ✅ Complete | 1 |
-| Task-007 | ArtikelCommands Migration | ⏳ Pending | - |
+| Task-007 | ArtikelCommands Migration | ✅ Complete | 1 |
 | Task-008 | AVCommands Migration | ⏳ Pending | - |
-| Task-009 | LagerbestandCommands Migration | ⏳ Pending | - |
+| Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
 | Task-010 | LagerbuchungCommands Migration | ⏳ Pending | - |
 | Task-011 | WarengruppeCommands Migration | ⏳ Pending | - |
 | Task-012 | SerieCommands and RollenCommands Migration | ⏳ Pending | - |
