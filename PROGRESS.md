@@ -7,10 +7,15 @@
   - Simplified CommonParameters record (removed ICommandParameterSet and attributes)
   - Build verified with expected Cocona errors
 
+- [x] Task-003: VorgangCommands Migration
+  - Created VorgangCommandBuilder.cs with all 7 subcommands (list, get, put, sample, archive, archive-bulk, activate)
+  - Updated VorgangCommands.cs to remove Cocona attributes
+  - Build verified - no Vorgang-related errors
+
 ## Current Iteration
 
-- Iteration: 1
-- Working on: Task-002
+- Iteration: 2
+- Working on: Task-003
 - Started: 2026-03-04
 
 ## Task Status
@@ -19,7 +24,7 @@
 |------|-------------|--------|------------|
 | Task-001 | Project File Migration | ⏳ Pending | - |
 | Task-002 | GlobalOptions and CommonParameters Setup | ✅ Complete | 1 |
-| Task-003 | VorgangCommands Migration | ⏳ Pending | - |
+| Task-003 | VorgangCommands Migration | ✅ Complete | 1 |
 | Task-004 | BenutzerCommands Migration | ⏳ Pending | - |
 | Task-005 | KontaktCommands Migration | ⏳ Pending | - |
 | Task-006 | BelegCommands Migration | ⏳ Pending | - |

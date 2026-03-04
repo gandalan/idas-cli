@@ -1,32 +1,28 @@
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
 public class VorgangCommands : CommandsBase
 {
-    [Command("list")]
     public async Task GetList(CommonParameters commonParams,
-        [Option("jahr", Description = "Year to list (0 = all years)")] int? jahr = null,
-        [Option("includeArchive", Description = "Include archived Vorgänge")] bool includeArchive = true,
-        [Option("includeOthersData", Description = "Include data from other users")] bool includeOthersData = true,
-        [Option("includeASP", Description = "Include application specific properties")] bool includeASP = true,
-        [Option("includeAdditionalProperties", Description = "Include additional properties")] bool includeAdditionalProperties = true)
+        int? jahr = null,
+        bool includeArchive = true,
+        bool includeOthersData = true,
+        bool includeASP = true,
+        bool includeAdditionalProperties = true)
     {
         var settings = await getSettings();
         VorgangListeWebRoutinen client = new(settings);
         var year = jahr ?? 0; // 0 = all years, like the client does
-        
+
         // Load Vorgänge with same parameters as the client (using VorgangListeWebRoutinen)
-        var activeList = await client.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "", 
+        var activeList = await client.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "",
             includeArchive, includeOthersData, "", includeASP, includeAdditionalProperties);
         await dumpOutput(commonParams, activeList);
     }
 
-    [Command("get")]
     public async Task GetVorgang(
         CommonParameters commonParams,
-        [Argument("vorgang", Description = "Vorgang-GUID")]
         Guid vorgang)
     {
         var settings = await getSettings();
@@ -35,10 +31,8 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, response);
     }
 
-    [Command("put")]
     public async Task PutVorgang(
         CommonParameters commonParams,
-        [Argument("file", Description = "JSON file with Vorgang data")]
         string file)
     {
         var settings = await getSettings();
@@ -52,7 +46,6 @@ public class VorgangCommands : CommandsBase
         } else throw new Exception("Invalid JSON file");
     }
 
-    [Command("sample", Description = "Create a sample VorgangDTO")]
     public async Task CreateSample(CommonParameters commonParams)
     {
         var posGuid = Guid.NewGuid();
@@ -73,23 +66,23 @@ public class VorgangCommands : CommandsBase
                     BelegDatum = DateTime.Now,
                     BelegJahr = DateTime.Now.Year,
                     InterneNotiz = "Testbeleg!",
-                    BelegAdresse = new BeleganschriftDTO() { 
-                        AdressGuid = Guid.NewGuid(), 
+                    BelegAdresse = new BeleganschriftDTO() {
+                        AdressGuid = Guid.NewGuid(),
                         Anrede = "Herr",
                         Vorname = "Test",
                         Nachname = "Test",
-                        Strasse = "Test", 
-                        Postleitzahl = "12345", 
-                        Ort = "Test", 
+                        Strasse = "Test",
+                        Postleitzahl = "12345",
+                        Ort = "Test",
                         Land = "DE"
-                    }, 
+                    },
                     VersandAdresseGleichBelegAdresse = true
                 }
             ],
 
             Positionen = [
-                new BelegPositionDTO() { 
-                    BelegPositionGuid = posGuid, 
+                new BelegPositionDTO() {
+                    BelegPositionGuid = posGuid,
                     Einbauort = "Test",
                     PositionsKommission = "PositionsKommission",
                     ErfassungsDatum = DateTime.Now,
@@ -97,18 +90,16 @@ public class VorgangCommands : CommandsBase
                     Menge = 1.0m,
                     IstAktiv = true,
                     ArtikelNummer = "102302.ZS",
-                    Daten = [ 
+                    Daten = [
                         new() { BelegPositionDatenGuid = Guid.NewGuid(), DatenTyp = "string", KonfigName="Besonderheiten", Wert = "Test" }
-                    ] 
+                    ]
                 }
             ]
         });
     }
 
-    [Command("archive", Description = "Archiviert einen einzelnen Vorgang")]
     public async Task ArchiveVorgang(
         CommonParameters commonParams,
-        [Argument("vorgang", Description = "Vorgang-GUID")]
         Guid vorgang)
     {
         var settings = await getSettings();
@@ -117,15 +108,13 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, new { Status = "Archiviert" });
     }
 
-    [Command("archive-bulk", Description = "Archiviert mehrere Vorgänge gleichzeitig")]
     public async Task ArchiveVorgangBulk(
         CommonParameters commonParams,
-        [Argument("vorgaenge", Description = "Kommagetrennte Liste von Vorgang-GUIDs")]
         string vorgaenge)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
-        
+
         var guids = vorgaenge.Split(',')
             .Select(g => Guid.TryParse(g.Trim(), out Guid guid) ? guid : Guid.Empty)
             .Where(g => g != Guid.Empty)
@@ -151,11 +140,8 @@ public class VorgangCommands : CommandsBase
         }
     }
 
-
-    [Command("activate")]
     public async Task ActivateVorgang(
         CommonParameters commonParams,
-        [Argument("vorgang", Description = "Vorgang-GUID")]
         Guid vorgang)
     {
         var settings = await getSettings();
