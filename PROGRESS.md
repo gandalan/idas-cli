@@ -63,6 +63,17 @@
   - Updated both Commands files to remove Cocona usings and attributes
   - Build verified - no Serie or Rollen-related errors
 
+- [x] Task-014: KonfigSatzCommands and WertelisteCommands Migration
+  - Created KonfigSatzCommandBuilder.cs with 2 subcommands: list, put
+  - list: no args, uses CommonParameters
+  - put: file argument (string)
+  - Created WertelisteCommandBuilder.cs with 3 subcommands: list, get, put
+  - list: --include-auto option (bool, default true), uses CommonParameters
+  - get: guid argument (Guid), --include-auto option (bool, default true), uses CommonParameters
+  - put: file argument (string)
+  - Updated both Commands files to remove Cocona usings and attributes
+  - Build verified - no KonfigSatz or Werteliste-related errors
+
 - [x] Task-015: gSQLCommands Migration
   - Created GSQLCommandBuilder.cs with 3 subcommands: list, get, reset
   - list: no args, uses CommonParameters
@@ -74,7 +85,7 @@
 ## Current Iteration
 
 - Iteration: 6
-- Working on: Task-015
+- Working on: Task-014
 - Started: 2026-03-04
 
 ## Task Status
@@ -94,7 +105,7 @@
 | Task-011 | WarengruppeCommands Migration | ✅ Complete | 1 |
 | Task-012 | SerieCommands and RollenCommands Migration | ✅ Complete | 1 |
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
-| Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ⏳ Pending | - |
+| Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ✅ Complete | 1 |
 | Task-015 | gSQLCommands Migration | ✅ Complete | 1 |
 | Task-016 | McpServerCommand Migration (no generate-tools) | ⏳ Pending | - |
 | Task-017 | Program.cs Rewrite | ⏳ Pending | - |
