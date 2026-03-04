@@ -2,6 +2,30 @@
 
 ## Completed
 
+- [x] Task-018b: Add CliCommand Attributes to All Methods
+  - Added `using static IdasCli.CliAttributes;` to all 16 Commands files
+  - Added [CliCommand] attributes to 47 command methods:
+    - VorgangCommands: list, get, put, sample, archive, archive-bulk, activate
+    - BenutzerCommands: login, logout, list, password-reset, change-password
+    - KontaktCommands: list, get, put, sample
+    - BelegCommands: list
+    - ArtikelCommands: list, put, sample
+    - AVCommands: list, get
+    - LagerbestandCommands: list
+    - LagerbuchungCommands: list, put, sample
+    - WarengruppeCommands: list
+    - SerieCommands: list, get, put, sample
+    - RollenCommands: listrollen
+    - VarianteCommands: list, get, put, all-guids
+    - UIDefinitionCommands: list, get, put
+    - KonfigSatzCommands: list, put
+    - WertelisteCommands: list, get, put
+    - gSQLCommands: list, get, reset
+  - Added [CliOption] attributes (15 total) for optional parameters
+  - Added [CliArgument] attributes (25 total) for positional arguments
+  - Build verified - 0 errors, 0 warnings
+  - Attribute counts verified: 47 CliCommand, 15 CliOption, 25 CliArgument
+
 - [x] Task-018: Runtime MCP Tool Registration
   - Created CliAttributes.cs with [CliCommand], [CliOption], [CliArgument] attributes
   - Created RuntimeMcpToolProvider.cs for runtime tool discovery via reflection
@@ -120,7 +144,7 @@
 ## Current Iteration
 
 - Iteration: 10
-- Working on: Task-018: Runtime MCP Tool Registration
+- Working on: Task-018b: Add CliCommand Attributes to All Methods (COMPLETED)
 - Started: 2026-03-04
 - Completed: 2026-03-04
 
@@ -146,7 +170,7 @@
 | Task-016 | McpServerCommand Migration (no generate-tools) | ✅ Complete | 1 |
 | Task-017 | Program.cs Rewrite | ✅ Complete | 1 |
 | Task-018 | Runtime MCP Tool Registration | ✅ Complete | 1 |
-| Task-018b | Add CliCommand Attributes to All Methods | 🔄 In Progress | - |
+| Task-018b | Add CliCommand Attributes to All Methods | ✅ Complete | 1 |
 | Task-018c | Remove Source Generation Files | ⏳ Pending | - |
 | Task-019 | Final Verification and Testing | ⏳ Pending | - |
 

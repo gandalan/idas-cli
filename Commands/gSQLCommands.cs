@@ -1,7 +1,9 @@
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
+using static IdasCli.CliAttributes;
 
 public class gSQLCommands : CommandsBase
 {
+    [CliCommand("list", Description = "List all gSQL Bestellungen")]
     public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -9,9 +11,10 @@ public class gSQLCommands : CommandsBase
         await dumpOutput(commonParams, await client.LadeBestellungenAsync());
     }
 
+    [CliCommand("get", Description = "Get gSQL data for a Beleg")]
     public async Task GetBeleg(
         CommonParameters commonParams,
-        Guid beleg)
+        [CliArgument(Description = "Beleg GUID")] Guid beleg)
     {
         var settings = await getSettings();
         IBOS1ImportRoutinen client = new(settings);
@@ -19,8 +22,9 @@ public class gSQLCommands : CommandsBase
         await dumpOutput(paramsOverride, await client.GetgSQLBelegAsync(beleg));
     }
 
+    [CliCommand("reset", Description = "Reset gSQL Bestellungen since date")]
     public async Task Reset(
-        DateTime since)
+        [CliArgument(Description = "Reset since date")] DateTime since)
     {
         var settings = await getSettings();
         IBOS1ImportRoutinen client = new(settings);

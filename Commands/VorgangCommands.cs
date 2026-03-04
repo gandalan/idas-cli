@@ -35,9 +35,10 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, response);
     }
 
+    [CliCommand("put", Description = "Update a Vorgang from JSON file")]
     public async Task PutVorgang(
         CommonParameters commonParams,
-        string file)
+        [CliArgument(Description = "Path to JSON file")] string file)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -50,6 +51,7 @@ public class VorgangCommands : CommandsBase
         } else throw new Exception("Invalid JSON file");
     }
 
+    [CliCommand("sample", Description = "Create a sample Vorgang JSON")]
     public async Task CreateSample(CommonParameters commonParams)
     {
         var posGuid = Guid.NewGuid();
@@ -102,9 +104,10 @@ public class VorgangCommands : CommandsBase
         });
     }
 
+    [CliCommand("archive", Description = "Archive a Vorgang")]
     public async Task ArchiveVorgang(
         CommonParameters commonParams,
-        Guid vorgang)
+        [CliArgument(Description = "Vorgang GUID to archive")] Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -112,9 +115,10 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, new { Status = "Archiviert" });
     }
 
+    [CliCommand("archive-bulk", Description = "Archive multiple Vorgänge by GUIDs")]
     public async Task ArchiveVorgangBulk(
         CommonParameters commonParams,
-        string vorgaenge)
+        [CliArgument(Description = "Comma-separated list of Vorgang GUIDs")] string vorgaenge)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -144,9 +148,10 @@ public class VorgangCommands : CommandsBase
         }
     }
 
+    [CliCommand("activate", Description = "Activate (unarchive) a Vorgang")]
     public async Task ActivateVorgang(
         CommonParameters commonParams,
-        Guid vorgang)
+        [CliArgument(Description = "Vorgang GUID to activate")] Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);

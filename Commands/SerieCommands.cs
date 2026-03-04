@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using static IdasCli.CliAttributes;
 
 public class SerieCommands : CommandsBase
 {
+    [CliCommand("list", Description = "List all Serien")]
     public async Task GetSerienList(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -11,17 +13,19 @@ public class SerieCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetAllSerienAsync());
     }
 
+    [CliCommand("get", Description = "Get a Serie by GUID")]
     public async Task GetSerie(
         CommonParameters commonParams,
-        Guid serie)
+        [CliArgument(Description = "Serie GUID")] Guid serie)
     {
         var settings = await getSettings();
         SerienWebRoutinen client = new(settings);
         await dumpOutput(commonParams, await client.GetSerieAsync(serie));
     }
 
+    [CliCommand("put", Description = "Update a Serie from JSON file")]
     public async Task PutSerie(
-        string file)
+        [CliArgument(Description = "Path to JSON file")] string file)
     {
         var settings = await getSettings();
         SerienWebRoutinen client = new(settings);
@@ -30,6 +34,7 @@ public class SerieCommands : CommandsBase
         await client.SaveSerieAsync(serie);
     }
 
+    [CliCommand("sample", Description = "Create a sample Serie JSON")]
     public async Task CreateSampleSerie(CommonParameters commonParams) => await dumpOutput(commonParams, new SerieDTO()
     {
         SerieGuid = Guid.NewGuid(),

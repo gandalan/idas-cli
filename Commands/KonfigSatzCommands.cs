@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using static IdasCli.CliAttributes;
 
 public class KonfigSatzCommands : CommandsBase
 {
+    [CliCommand("list", Description = "List all KonfigSätze")]
     public async Task GetList(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -11,8 +13,9 @@ public class KonfigSatzCommands : CommandsBase
         await dumpOutput(commonParams, await client.GetAllAsync());
     }
 
+    [CliCommand("put", Description = "Update a KonfigSatz from JSON file")]
     public async Task PutKonfigSatz(
-        string file)
+        [CliArgument(Description = "Path to JSON file")] string file)
     {
         var settings = await getSettings();
         KonfigSatzInfoWebRoutinen client = new(settings);
