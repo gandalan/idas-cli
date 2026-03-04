@@ -2,6 +2,13 @@
 
 ## Completed
 
+- [x] Task-018: Runtime MCP Tool Registration
+  - Created CliAttributes.cs with [CliCommand], [CliOption], [CliArgument] attributes
+  - Created RuntimeMcpToolProvider.cs for runtime tool discovery via reflection
+  - Created DynamicMcpToolHandler.cs for dynamic CLI command invocation
+  - Updated McpToolRegistrar.cs to use new runtime discovery
+  - Build verified - 0 errors, 0 warnings
+
 - [x] Task-002: GlobalOptions and CommonParameters Setup
   - Created GlobalOptions.cs with Format and FileName System.CommandLine options
   - Simplified CommonParameters record (removed ICommandParameterSet and attributes)
@@ -112,10 +119,36 @@
 
 ## Current Iteration
 
-- Iteration: 9
-- Working on: Task-017: Program.cs Rewrite (COMPLETED)
+- Iteration: 10
+- Working on: Task-018: Runtime MCP Tool Registration
 - Started: 2026-03-04
 - Completed: 2026-03-04
+
+## Task Status
+
+| Task | Description | Status | Iterations |
+|------|-------------|--------|------------|
+| Task-001 | Project File Migration | ⏳ Pending | - |
+| Task-002 | GlobalOptions and CommonParameters Setup | ✅ Complete | 1 |
+| Task-003 | VorgangCommands Migration | ✅ Complete | 1 |
+| Task-004 | BenutzerCommands Migration | ✅ Complete | 1 |
+| Task-005 | KontaktCommands Migration | ✅ Complete | 1 |
+| Task-006 | BelegCommands Migration | ✅ Complete | 1 |
+| Task-007 | ArtikelCommands Migration | ✅ Complete | 1 |
+| Task-008 | AVCommands Migration | ✅ Complete | 1 |
+| Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
+| Task-010 | LagerbuchungCommands Migration | ✅ Complete | 1 |
+| Task-011 | WarengruppeCommands Migration | ✅ Complete | 1 |
+| Task-012 | SerieCommands and RollenCommands Migration | ✅ Complete | 1 |
+| Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
+| Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ✅ Complete | 1 |
+| Task-015 | gSQLCommands Migration | ✅ Complete | 1 |
+| Task-016 | McpServerCommand Migration (no generate-tools) | ✅ Complete | 1 |
+| Task-017 | Program.cs Rewrite | ✅ Complete | 1 |
+| Task-018 | Runtime MCP Tool Registration | ✅ Complete | 1 |
+| Task-018b | Add CliCommand Attributes to All Methods | 🔄 In Progress | - |
+| Task-018c | Remove Source Generation Files | ⏳ Pending | - |
+| Task-019 | Final Verification and Testing | ⏳ Pending | - |
 
 ## Task Status
 

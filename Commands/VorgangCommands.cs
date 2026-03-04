@@ -1,10 +1,13 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using static IdasCli.CliAttributes;
 
 public class VorgangCommands : CommandsBase
 {
-    public async Task GetList(CommonParameters commonParams,
+    [CliCommand("list", Description = "List all Vorgänge")]
+    public async Task GetList(
+        CommonParameters commonParams,
         int? jahr = null,
         bool includeArchive = true,
         bool includeOthersData = true,
@@ -21,9 +24,10 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, activeList);
     }
 
+    [CliCommand("get", Description = "Get a single Vorgang by GUID")]
     public async Task GetVorgang(
         CommonParameters commonParams,
-        Guid vorgang)
+        [CliArgument(Description = "Vorgang GUID")] Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
