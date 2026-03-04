@@ -53,10 +53,20 @@
   - Updated WarengruppeCommands.cs to remove Cocona usings and attributes
   - Build verified - no Warengruppe-related errors
 
+- [x] Task-012: SerieCommands and RollenCommands Migration
+  - Created SerieCommandBuilder.cs with 4 subcommands: list, get, put, sample
+  - list: no args, uses CommonParameters
+  - get: serie argument (Guid)
+  - put: file argument (string)
+  - sample: no args, uses CommonParameters
+  - Created RollenCommandBuilder.cs with 1 subcommand: listrollen
+  - Updated both Commands files to remove Cocona usings and attributes
+  - Build verified - no Serie or Rollen-related errors
+
 ## Current Iteration
 
-- Iteration: 4
-- Working on: Task-011
+- Iteration: 5
+- Working on: Task-012
 - Started: 2026-03-04
 
 ## Task Status
@@ -74,7 +84,7 @@
 | Task-009 | LagerbestandCommands Migration | ✅ Complete | 1 |
 | Task-010 | LagerbuchungCommands Migration | ⏳ Pending | - |
 | Task-011 | WarengruppeCommands Migration | ✅ Complete | 1 |
-| Task-012 | SerieCommands and RollenCommands Migration | ⏳ Pending | - |
+| Task-012 | SerieCommands and RollenCommands Migration | ✅ Complete | 1 |
 | Task-013 | VarianteCommands and UIDefinitionCommands Migration | ⏳ Pending | - |
 | Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ⏳ Pending | - |
 | Task-015 | gSQLCommands Migration | ⏳ Pending | - |
