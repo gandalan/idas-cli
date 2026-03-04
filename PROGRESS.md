@@ -22,6 +22,12 @@
   - Updated KontaktCommands.cs to remove Cocona usings and attributes
   - Build verified - no Kontakt-related errors
 
+- [x] Task-006: BelegCommands Migration
+  - Created BelegCommandBuilder.cs with 'list' subcommand
+  - BelegCommands has LOCAL --format and --filename options (not using GlobalOptions)
+  - Updated BelegCommands.cs to remove Cocona usings and attributes
+  - Build verified - no Beleg-related errors
+
 ## Current Iteration
 
 - Iteration: 3
@@ -37,7 +43,7 @@
 | Task-003 | VorgangCommands Migration | ✅ Complete | 1 |
 | Task-004 | BenutzerCommands Migration | ✅ Complete | 1 |
 | Task-005 | KontaktCommands Migration | ✅ Complete | 1 |
-| Task-006 | BelegCommands Migration | ⏳ Pending | - |
+| Task-006 | BelegCommands Migration | ✅ Complete | 1 |
 | Task-007 | ArtikelCommands Migration | ⏳ Pending | - |
 | Task-008 | AVCommands Migration | ⏳ Pending | - |
 | Task-009 | LagerbestandCommands Migration | ⏳ Pending | - |

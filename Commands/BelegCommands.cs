@@ -1,21 +1,19 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Cocona;
 using Gandalan.IDAS.Client.Contracts.Contracts;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
 public class BelegCommands : CommandsBase
 {
-    [Command("list")]
     public async Task List(
-        [Option("jahr", Description = "Jahr filtern (0 = alle Jahre)")] int jahr = 0,
-        [Option("format", Description = "Output format: json oder csv")] string format = "json",
-        [Option("separator", Description = "CSV-Trennzeichen")] string separator = ";",
-        [Option("belegart", Description = "Belegart filtern (z.B. AB, Angebot, Rechnung)")] string? belegart = null,
-        [Option("filename", Description = "Output in Datei speichern")] string? filename = null,
-        [Option("include-archive", Description = "Archivierte Vorgänge inkludieren")] bool includeArchive = true
+        int jahr = 0,
+        string format = "json",
+        string separator = ";",
+        string? belegart = null,
+        string? filename = null,
+        bool includeArchive = true
     )
     {
         var settings = await getSettings();
