@@ -140,7 +140,7 @@ public class DynamicCoconaTool : CommandsBase
         }
     }
 
-    private object?[] PrepareMethodParameters(CoconaToolMetadata metadata, Dictionary<string, object?> parameters)
+    private object?[] PrepareMethodParameters(CliToolMetadata metadata, Dictionary<string, object?> parameters)
     {
         var methodParams = metadata.Method.GetParameters();
         var paramValues = new List<object?>();

@@ -54,7 +54,7 @@ public class McpToolSourceGenerator
         return sb.ToString();
     }
 
-    private static void GenerateToolMethod(StringBuilder sb, CoconaToolMetadata tool)
+    private static void GenerateToolMethod(StringBuilder sb, CliToolMetadata tool)
     {
         // Add method documentation
         sb.AppendLine("    /// <summary>");
@@ -146,7 +146,7 @@ public class McpToolSourceGenerator
         return typeName;
     }
 
-    private static string GetDefaultValueString(CoconaParameterMetadata param)
+    private static string GetDefaultValueString(CliParameterMetadata param)
     {
         if (param.DefaultValue == null || param.DefaultValue == DBNull.Value)
         {

@@ -8,7 +8,7 @@ var configManager = new FirstRunManager(args);
 if (!configManager.TryResolveConfiguration(out var appGuid, out var env))
 {
     Environment.Exit(1);
-    return;
+    return 1;
 }
 
 // Set environment variables for this process so CommandsBase can read them

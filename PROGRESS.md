@@ -100,11 +100,22 @@
   - Removed GenerateTools() method entirely (including #if DEBUG block)
   - Build verified - no McpServer-related errors
 
+- [x] Task-017: Program.cs Rewrite
+  - Replaced `using Cocona;` with `using System.CommandLine;`
+  - Replaced CoconaApp builder with System.CommandLine RootCommand
+  - Added all 17 command builders (Vorgang, GSQL, Kontakt, Artikel, AV, Lagerbestand, Lagerbuchung, Warengruppe, Benutzer, Serie, Rollen, Variante, UIDefinition, KonfigSatz, Werteliste, McpServer, Beleg)
+  - Added global options (--format, --filename) via GlobalOptions
+  - Fixed return type to `return await rootCommand.InvokeAsync(effectiveArgs)` returning int
+  - Kept configuration loading code (FirstRunManager, env vars, auto-login)
+  - Kept CommonParameters record at the end
+  - Build verified - 0 errors, 0 warnings
+
 ## Current Iteration
 
-- Iteration: 8
-- Working on: Task-010
+- Iteration: 9
+- Working on: Task-017: Program.cs Rewrite (COMPLETED)
 - Started: 2026-03-04
+- Completed: 2026-03-04
 
 ## Task Status
 
@@ -126,7 +137,7 @@
 | Task-014 | KonfigSatzCommands and WertelisteCommands Migration | ✅ Complete | 1 |
 | Task-015 | gSQLCommands Migration | ✅ Complete | 1 |
 | Task-016 | McpServerCommand Migration (no generate-tools) | ✅ Complete | 1 |
-| Task-017 | Program.cs Rewrite | ⏳ Pending | - |
+| Task-017 | Program.cs Rewrite | ✅ Complete | 1 |
 | Task-018 | Runtime MCP Tool Registration (NEW) | ⏳ Pending | - |
 | Task-018b | Add CliCommand Attributes to All Methods (NEW) | ⏳ Pending | - |
 | Task-018c | Remove Source Generation Files (NEW) | ⏳ Pending | - |
