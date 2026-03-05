@@ -1,5 +1,8 @@
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
+using System.Reflection;
+using System.Collections;
 using Gandalan.IDAS.Client.Contracts.Contracts;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
@@ -236,21 +239,314 @@ public class CommandsBase
                 break;
 
             default:
-                // Always write data output, even in silent mode (needed for MCP)
-                try
+                // CSV output - serialize arrays and objects properly
+                var csvOutput = ConvertToCsv(data);
+                if (!string.IsNullOrEmpty(commonParameters.FileName))
                 {
-                    Console.WriteLine(data.ToString());
+                    await File.WriteAllTextAsync(commonParameters.FileName, csvOutput);
                 }
-                catch (ObjectDisposedException)
+                else
                 {
-                    // Console closed - ignore
-                }
-                catch (IOException)
-                {
-                    // Cannot write - ignore
+                    // Always write data output, even in silent mode (needed for MCP)
+                    try
+                    {
+                        Console.WriteLine(csvOutput);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Console closed - ignore
+                    }
+                    catch (IOException)
+                    {
+                        // Cannot write - ignore
+                    }
                 }
                 break;
         }
+    }
+
+    /// <summary>
+    /// Converts an object or collection to CSV format using reflection
+    /// </summary>
+    private string ConvertToCsv(object data)
+    {
+        if (data == null)
+            return string.Empty;
+
+        // Check if data is a collection (but not a string)
+        if (data is IEnumerable enumerable && data is not string)
+        {
+            var items = new List<object>();
+            foreach (var item in enumerable)
+            {
+                items.Add(item);
+            }
+
+            if (items.Count == 0)
+                return string.Empty;
+
+            return ConvertCollectionToCsv(items);
+        }
+
+        // Single object - convert to single-row CSV
+        return ConvertSingleObjectToCsv(data);
+    }
+
+    /// <summary>
+    /// Converts a collection of objects to CSV format
+    /// </summary>
+    private string ConvertCollectionToCsv(List<object> items)
+    {
+        var sb = new StringBuilder();
+
+        // Get properties from the first item
+        var firstItem = items[0];
+        var allProperties = firstItem.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead)
+            .ToArray();
+
+        // Filter out properties that are complex collections (GetPropertyValue returns null for those)
+        var properties = allProperties
+            .Where(p => GetPropertyValue(p, firstItem) != null || !IsComplexCollection(p))
+            .ToArray();
+
+        if (properties.Length == 0)
+            return string.Empty;
+
+        // Write header
+        var headers = properties.Select(p => p.Name);
+        sb.AppendLine(string.Join(";", headers));
+
+        // Write data rows
+        foreach (var item in items)
+        {
+            var values = properties.Select(p => EscapeCsvValue(GetPropertyValue(p, item) ?? string.Empty));
+            sb.AppendLine(string.Join(";", values));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Converts a single object to CSV format (header + one data row)
+    /// </summary>
+    private string ConvertSingleObjectToCsv(object item)
+    {
+        var sb = new StringBuilder();
+
+        var allProperties = item.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead)
+            .ToArray();
+
+        // Filter out properties that are complex collections (GetPropertyValue returns null for those)
+        var properties = allProperties
+            .Where(p => GetPropertyValue(p, item) != null || !IsComplexCollection(p))
+            .ToArray();
+
+        if (properties.Length == 0)
+            return item.ToString() ?? string.Empty;
+
+        // Write header
+        var headers = properties.Select(p => p.Name);
+        sb.AppendLine(string.Join(";", headers));
+
+        // Write data row
+        var values = properties.Select(p => EscapeCsvValue(GetPropertyValue(p, item) ?? string.Empty));
+        sb.AppendLine(string.Join(";", values));
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Checks if a property is a complex collection (non-primitive IEnumerable)
+    /// </summary>
+    private bool IsComplexCollection(PropertyInfo property)
+    {
+        var propertyType = property.PropertyType;
+
+        // Check if it's a collection (but not string)
+        if (propertyType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(propertyType))
+            return false;
+
+        // Get the element type
+        var elementType = GetCollectionElementType(propertyType);
+
+        // If element type is not primitive, it's a complex collection
+        return !IsPrimitiveType(elementType);
+    }
+
+    /// <summary>
+    /// Gets the string value of a property. Returns null for complex collections that should be excluded.
+    /// </summary>
+    private string? GetPropertyValue(PropertyInfo property, object item)
+    {
+        try
+        {
+            var value = property.GetValue(item);
+            if (value == null)
+                return string.Empty;
+
+            // Check if value is a collection (but not a string)
+            if (value is IEnumerable enumerable && value is not string)
+            {
+                // Get the element type from the collection
+                var elementType = GetCollectionElementType(property.PropertyType);
+
+                // If it's a collection of primitive types, serialize as comma-separated values
+                if (IsPrimitiveType(elementType))
+                {
+                    return SerializePrimitiveCollection(enumerable);
+                }
+
+                // It's a collection of complex types - return null to indicate exclusion
+                return null;
+            }
+
+            // Handle special types
+            if (value is DateTime dt)
+                return dt.ToString("yyyy-MM-dd HH:mm:ss");
+            if (value is DateTimeOffset dto)
+                return dto.ToString("yyyy-MM-dd HH:mm:ss");
+            if (value is Guid g)
+                return g.ToString("D");
+            if (value is bool b)
+                return b ? "true" : "false";
+
+            return value.ToString() ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Determines if a type is a primitive type that should be serialized in CSV
+    /// </summary>
+    private bool IsPrimitiveType(Type? type)
+    {
+        if (type == null)
+            return false;
+
+        // Unwrap nullable types
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+        // Check for primitive types
+        if (underlyingType.IsPrimitive)
+            return true;
+
+        // Check for additional common types that should be treated as primitives
+        if (underlyingType == typeof(string) ||
+            underlyingType == typeof(Guid) ||
+            underlyingType == typeof(DateTime) ||
+            underlyingType == typeof(DateTimeOffset) ||
+            underlyingType == typeof(decimal) ||
+            underlyingType == typeof(TimeSpan))
+        {
+            return true;
+        }
+
+        // Enum types are also considered primitives for CSV purposes
+        if (underlyingType.IsEnum)
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the element type of a collection type
+    /// </summary>
+    private Type? GetCollectionElementType(Type collectionType)
+    {
+        // Handle arrays
+        if (collectionType.IsArray)
+            return collectionType.GetElementType();
+
+        // Handle generic collections
+        if (collectionType.IsGenericType)
+        {
+            var genericArgs = collectionType.GetGenericArguments();
+            if (genericArgs.Length > 0)
+                return genericArgs[0];
+        }
+
+        // Handle interfaces like IEnumerable<T>
+        foreach (var interfaceType in collectionType.GetInterfaces())
+        {
+            if (interfaceType.IsGenericType &&
+                interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                return interfaceType.GetGenericArguments()[0];
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Serializes an IEnumerable of primitive types to a comma-separated string
+    /// </summary>
+    private string SerializePrimitiveCollection(IEnumerable enumerable)
+    {
+        var values = new List<string>();
+
+        foreach (var item in enumerable)
+        {
+            if (item == null)
+            {
+                values.Add(string.Empty);
+                continue;
+            }
+
+            // Handle different primitive types
+            string formattedValue = item switch
+            {
+                DateTime dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
+                DateTimeOffset dto => dto.ToString("yyyy-MM-dd HH:mm:ss"),
+                Guid g => g.ToString("D"),
+                bool b => b ? "true" : "false",
+                _ => item.ToString() ?? string.Empty
+            };
+
+            values.Add(formattedValue);
+        }
+
+        // Join with comma and wrap in brackets for clarity
+        if (values.Count == 0)
+            return "[]";
+
+        return "[" + string.Join(",", values.Select(v => EscapeCsvCollectionValue(v))) + "]";
+    }
+
+    /// <summary>
+    /// Escapes a value within a collection to ensure it doesn't break the CSV structure
+    /// </summary>
+    private string EscapeCsvCollectionValue(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        // Escape commas and brackets within the value
+        value = value.Replace("\\", "\\\\").Replace(",", "\\,").Replace("[", "\\[").Replace("]", "\\]");
+
+        return value;
+    }
+
+    /// <summary>
+    /// Escapes a CSV value if it contains special characters
+    /// </summary>
+    private string EscapeCsvValue(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        // If value contains semicolon, quotes, or newlines, wrap in quotes and escape internal quotes
+        if (value.Contains(';') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
+        {
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
     }
 
     /// <summary>
