@@ -44,6 +44,19 @@ public static class RollenCommandBuilder
 
         cmd.AddCommand(sampleCmd);
 
+        // put subcommand
+        var putCmd = new Command("put", "Save a Rolle from JSON file");
+        var fileArg = new Argument<string>("file", "Path to JSON file");
+        putCmd.AddArgument(fileArg);
+
+        putCmd.SetHandler(async (file) =>
+        {
+            var handler = new RollenCommands();
+            await handler.Put(file);
+        }, fileArg);
+
+        cmd.AddCommand(putCmd);
+
         return cmd;
     }
 }

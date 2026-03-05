@@ -46,4 +46,15 @@ public class RollenCommands : CommandsBase
         };
         await dumpOutput(commonParams, sample);
     }
+
+    [CliCommand("put", Description = "Save a Rolle from JSON file")]
+    public async Task Put(
+        [CliArgument(Description = "Path to JSON file")] string file)
+    {
+        var settings = await getSettings();
+        RollenWebRoutinen client = new(settings);
+        var rolle = JsonSerializer.Deserialize<RolleDTO>(await File.ReadAllTextAsync(file));
+        await client.SaveAsync(rolle);
+        Console.WriteLine($"Rolle '{rolle.Name}' wurde gespeichert.");
+    }
 }

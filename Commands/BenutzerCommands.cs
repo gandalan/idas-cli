@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client;
+using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.Client.Settings;
 using Gandalan.IDAS.WebApi.DTO;
 using IDAS.Cli.SSO;
@@ -100,6 +101,91 @@ public class BenutzerCommands : CommandsBase
         var client = new BenutzerWebRoutinen(settings);
         var data = await client.GetBenutzerListeAsync(settings.AuthToken.MandantGuid);
         await dumpOutput(commonParams, data);
+    }
+
+    [CliCommand("get", Description = "Get user by GUID with roles")]
+    public async Task Get(
+        CommonParameters commonParams,
+        [CliArgument(Description = "User GUID")] Guid benutzerGuid)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+        var benutzer = await client.GetBenutzerAsync(benutzerGuid, mitRollenUndRechten: true);
+        await dumpOutput(commonParams, benutzer);
+    }
+
+    [CliCommand("add-role", Description = "Add a role to a user")]
+    public async Task AddRole(
+        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
+        [CliArgument(Description = "Role GUID")] Guid rolleGuid)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+
+        var benutzer = await client.GetBenutzerAsync(benutzerGuid, mitRollenUndRechten: true);
+
+        if (benutzer.Rollen == null)
+            benutzer.Rollen = new List<RolleDTO>();
+
+        if (!benutzer.Rollen.Any(r => r.RolleGuid == rolleGuid))
+        {
+            var rollenClient = new RollenWebRoutinen(settings);
+            var alleRollen = await rollenClient.GetAllAsync();
+            var rolle = alleRollen.FirstOrDefault(r => r.RolleGuid == rolleGuid);
+
+            if (rolle != null)
+            {
+                benutzer.Rollen.Add(rolle);
+                await client.SaveBenutzerAsync(benutzer);
+                Console.WriteLine($"Rolle '{rolle.Name}' wurde hinzugefügt.");
+            }
+            else
+            {
+                Console.WriteLine($"Rolle mit GUID {rolleGuid} nicht gefunden.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Benutzer hat diese Rolle bereits.");
+        }
+    }
+
+    [CliCommand("remove-role", Description = "Remove a role from a user")]
+    public async Task RemoveRole(
+        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
+        [CliArgument(Description = "Role GUID")] Guid rolleGuid)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+
+        var benutzer = await client.GetBenutzerAsync(benutzerGuid, mitRollenUndRechten: true);
+
+        if (benutzer.Rollen != null && benutzer.Rollen.Any(r => r.RolleGuid == rolleGuid))
+        {
+            benutzer.Rollen = benutzer.Rollen.Where(r => r.RolleGuid != rolleGuid).ToList();
+            await client.SaveBenutzerAsync(benutzer);
+            Console.WriteLine("Rolle wurde entfernt.");
+        }
+        else
+        {
+            Console.WriteLine("Benutzer hat diese Rolle nicht.");
+        }
+    }
+
+    [CliCommand("set-rollen", Description = "Set user roles from JSON file (replaces all)")]
+    public async Task SetRollen(
+        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
+        [CliArgument(Description = "Path to JSON file with roles array")] string file)
+    {
+        var settings = await getSettings();
+        var client = new BenutzerWebRoutinen(settings);
+
+        var benutzer = await client.GetBenutzerAsync(benutzerGuid, mitRollenUndRechten: true);
+        var rollen = JsonSerializer.Deserialize<List<RolleDTO>>(await File.ReadAllTextAsync(file));
+
+        benutzer.Rollen = rollen;
+        await client.SaveBenutzerAsync(benutzer);
+        Console.WriteLine($"{rollen.Count} Rollen wurden zugewiesen.");
     }
 
     [CliCommand("password-reset", Description = "Request password reset email")]

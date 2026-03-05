@@ -72,6 +72,65 @@ public static class BenutzerCommandBuilder
 
         cmd.AddCommand(changePasswordCmd);
 
+        // get subcommand - Get user by GUID with roles
+        var getCmd = new Command("get", "Get user by GUID with roles");
+        var benutzerGuidArg = new Argument<Guid>("benutzerGuid", "User GUID");
+        getCmd.AddArgument(benutzerGuidArg);
+
+        getCmd.SetHandler(async (format, filename, benutzerGuid) =>
+        {
+            var commonParams = new CommonParameters(format, filename);
+            var handler = new BenutzerCommands();
+            await handler.Get(commonParams, benutzerGuid);
+        }, GlobalOptions.Format, GlobalOptions.FileName, benutzerGuidArg);
+
+        cmd.AddCommand(getCmd);
+
+        // add-role subcommand - Add a role to a user
+        var addRoleCmd = new Command("add-role", "Add a role to a user");
+        var addRoleUserArg = new Argument<Guid>("benutzerGuid", "User GUID");
+        var addRoleRoleArg = new Argument<Guid>("rolleGuid", "Role GUID");
+        addRoleCmd.AddArgument(addRoleUserArg);
+        addRoleCmd.AddArgument(addRoleRoleArg);
+
+        addRoleCmd.SetHandler(async (benutzerGuid, rolleGuid) =>
+        {
+            var handler = new BenutzerCommands();
+            await handler.AddRole(benutzerGuid, rolleGuid);
+        }, addRoleUserArg, addRoleRoleArg);
+
+        cmd.AddCommand(addRoleCmd);
+
+        // remove-role subcommand - Remove a role from a user
+        var removeRoleCmd = new Command("remove-role", "Remove a role from a user");
+        var removeRoleUserArg = new Argument<Guid>("benutzerGuid", "User GUID");
+        var removeRoleRoleArg = new Argument<Guid>("rolleGuid", "Role GUID");
+        removeRoleCmd.AddArgument(removeRoleUserArg);
+        removeRoleCmd.AddArgument(removeRoleRoleArg);
+
+        removeRoleCmd.SetHandler(async (benutzerGuid, rolleGuid) =>
+        {
+            var handler = new BenutzerCommands();
+            await handler.RemoveRole(benutzerGuid, rolleGuid);
+        }, removeRoleUserArg, removeRoleRoleArg);
+
+        cmd.AddCommand(removeRoleCmd);
+
+        // set-rollen subcommand - Set user roles from JSON file (replaces all)
+        var setRollenCmd = new Command("set-rollen", "Set user roles from JSON file (replaces all)");
+        var setRollenUserArg = new Argument<Guid>("benutzerGuid", "User GUID");
+        var setRollenFileArg = new Argument<string>("file", "Path to JSON file with roles array");
+        setRollenCmd.AddArgument(setRollenUserArg);
+        setRollenCmd.AddArgument(setRollenFileArg);
+
+        setRollenCmd.SetHandler(async (benutzerGuid, file) =>
+        {
+            var handler = new BenutzerCommands();
+            await handler.SetRollen(benutzerGuid, file);
+        }, setRollenUserArg, setRollenFileArg);
+
+        cmd.AddCommand(setRollenCmd);
+
         return cmd;
     }
 }

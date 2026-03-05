@@ -46,6 +46,7 @@ rootCommand.AddCommand(VarianteCommandBuilder.Build());
 rootCommand.AddCommand(UIDefinitionCommandBuilder.Build());
 rootCommand.AddCommand(KonfigSatzCommandBuilder.Build());
 rootCommand.AddCommand(WertelisteCommandBuilder.Build());
+rootCommand.AddCommand(BerechtigungCommandBuilder.Build());
 rootCommand.AddCommand(McpServerCommandBuilder.Build());
 rootCommand.AddCommand(BelegCommandBuilder.Build());
 
