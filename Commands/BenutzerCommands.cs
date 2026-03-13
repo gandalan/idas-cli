@@ -4,7 +4,6 @@ using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.Client.Settings;
 using Gandalan.IDAS.WebApi.DTO;
-using IDAS.Cli.SSO;
 
 public class BenutzerCommands : CommandsBase
 {
