@@ -24,31 +24,9 @@ if (args.Length == 0 && !File.Exists("token"))
     effectiveArgs = new[] { "benutzer", "login" };
 }
 
-var rootCommand = new RootCommand("IDAS CLI - Command line interface for IDAS/i3 ERP system");
-
-// Add global options
-rootCommand.AddGlobalOption(GlobalOptions.Format);
-rootCommand.AddGlobalOption(GlobalOptions.FileName);
-
-// Add all command builders
-rootCommand.AddCommand(VorgangCommandBuilder.Build());
-rootCommand.AddCommand(GSQLCommandBuilder.Build());
-rootCommand.AddCommand(KontaktCommandBuilder.Build());
-rootCommand.AddCommand(ArtikelCommandBuilder.Build());
-rootCommand.AddCommand(AVCommandBuilder.Build());
-rootCommand.AddCommand(LagerbestandCommandBuilder.Build());
-rootCommand.AddCommand(LagerbuchungCommandBuilder.Build());
-rootCommand.AddCommand(WarengruppeCommandBuilder.Build());
-rootCommand.AddCommand(BenutzerCommandBuilder.Build());
-rootCommand.AddCommand(SerieCommandBuilder.Build());
-rootCommand.AddCommand(RollenCommandBuilder.Build());
-rootCommand.AddCommand(VarianteCommandBuilder.Build());
-rootCommand.AddCommand(UIDefinitionCommandBuilder.Build());
-rootCommand.AddCommand(KonfigSatzCommandBuilder.Build());
-rootCommand.AddCommand(WertelisteCommandBuilder.Build());
-rootCommand.AddCommand(BerechtigungCommandBuilder.Build());
-rootCommand.AddCommand(McpServerCommandBuilder.Build());
-rootCommand.AddCommand(BelegCommandBuilder.Build());
+var rootCommand = CliRootCommandFactory.BuildRootCommand(
+    "IDAS CLI - Command line interface for IDAS/i3 ERP system",
+    includeMcpServer: true);
 
 return await rootCommand.InvokeAsync(effectiveArgs);
 

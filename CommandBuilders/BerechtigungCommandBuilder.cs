@@ -11,9 +11,12 @@ public static class BerechtigungCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new BerechtigungCommands();
-            await handler.List(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new BerechtigungCommands();
+                await handler.List(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);

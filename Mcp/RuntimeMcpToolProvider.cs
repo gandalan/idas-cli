@@ -1,65 +1,28 @@
-using System.ComponentModel;
-using System.Reflection;
+using System.CommandLine;
 using System.Text.Json;
-using static IdasCli.CliAttributes;
 
 namespace IdasCli.Mcp;
 
 /// <summary>
-/// Provides runtime discovery of MCP tools using reflection.
-/// Scans assembly for methods with [CliCommand] attribute and creates metadata.
+/// Provides runtime discovery of MCP tools using the System.CommandLine tree.
+/// Scans registered CLI commands and creates MCP metadata from the command structure.
 /// </summary>
 public static class RuntimeMcpToolProvider
 {
     private static readonly Dictionary<string, McpToolMetadata> _tools = new();
+    private static readonly StringComparer NameComparer = StringComparer.OrdinalIgnoreCase;
 
     /// <summary>
-    /// Scans the assembly for classes inheriting from CommandsBase and discovers
-    /// methods with [CliCommand] attribute.
+    /// Scans the root command for registered CLI commands.
     /// </summary>
-    public static IReadOnlyDictionary<string, McpToolMetadata> DiscoverTools()
+    public static IReadOnlyDictionary<string, McpToolMetadata> DiscoverTools(RootCommand rootCommand)
     {
         if (_tools.Count > 0)
             return _tools;
 
-        var assembly = Assembly.GetExecutingAssembly();
-        var commandTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(CommandsBase)));
-
-        foreach (var commandType in commandTypes)
+        foreach (var command in rootCommand.Subcommands)
         {
-            var typeName = commandType.Name;
-            // Remove "Commands" suffix to get the command group name
-            var commandGroup = typeName.EndsWith("Commands")
-                ? typeName[..^"Commands".Length].ToLowerInvariant()
-                : typeName.ToLowerInvariant();
-
-            var methods = commandType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (var method in methods)
-            {
-                var cliCommandAttr = method.GetCustomAttribute<CliCommandAttribute>();
-                if (cliCommandAttr == null)
-                    continue;
-
-                // Skip methods that shouldn't be exposed as MCP tools
-                if (ShouldSkipMethod(method))
-                    continue;
-
-                var toolMetadata = CreateToolMetadata(commandGroup, cliCommandAttr, method, commandType);
-                var toolName = $"{commandGroup}_{cliCommandAttr.Name}";
-
-                // Handle duplicate names (e.g., for overloads)
-                var uniqueToolName = toolName;
-                var counter = 1;
-                while (_tools.ContainsKey(uniqueToolName))
-                {
-                    uniqueToolName = $"{toolName}_{counter}";
-                    counter++;
-                }
-
-                _tools[uniqueToolName] = toolMetadata;
-            }
+            DiscoverCommand(command, new[] { command.Name });
         }
 
         return _tools;
@@ -70,7 +33,7 @@ public static class RuntimeMcpToolProvider
     /// </summary>
     public static McpToolMetadata? GetTool(string toolName)
     {
-        DiscoverTools();
+        EnsureDiscovered();
         return _tools.TryGetValue(toolName, out var tool) ? tool : null;
     }
 
@@ -79,9 +42,11 @@ public static class RuntimeMcpToolProvider
     /// </summary>
     public static IEnumerable<McpToolMetadata> GetAllTools()
     {
-        DiscoverTools();
+        EnsureDiscovered();
         return _tools.Values;
     }
+
+    public static int ToolCount => _tools.Count;
 
     /// <summary>
     /// Clears the discovered tools cache. Useful for testing.
@@ -91,103 +56,109 @@ public static class RuntimeMcpToolProvider
         _tools.Clear();
     }
 
-    private static bool ShouldSkipMethod(MethodInfo method)
+    private static void EnsureDiscovered()
     {
-        // Skip property getters/setters
-        if (method.IsSpecialName)
-            return true;
-
-        // Skip methods from Object class
-        if (method.DeclaringType == typeof(object))
-            return true;
-
-        // Skip methods from CommandsBase that aren't commands
-        if (method.DeclaringType == typeof(CommandsBase) && method.Name != "InvokeCommand")
-            return true;
-
-        // Skip async infrastructure methods
-        if (method.Name.Contains("<") || method.Name.Contains(">"))
-            return true;
-
-        return false;
+        if (_tools.Count == 0)
+            throw new InvalidOperationException("MCP tools have not been discovered yet. Initialize the MCP container first.");
     }
 
-    private static McpToolMetadata CreateToolMetadata(
-        string commandGroup,
-        CliCommandAttribute cliCommandAttr,
-        MethodInfo method,
-        Type commandType)
+    private static void DiscoverCommand(Command command, IReadOnlyList<string> commandPath)
+    {
+        if (ShouldSkipCommand(commandPath))
+            return;
+
+        var subcommands = command.Subcommands.Where(subcommand => !ShouldSkipCommand(new[] { subcommand.Name })).ToList();
+        if (subcommands.Count > 0)
+        {
+            foreach (var subcommand in subcommands)
+            {
+                DiscoverCommand(subcommand, commandPath.Concat(new[] { subcommand.Name }).ToArray());
+            }
+
+            return;
+        }
+
+        var toolMetadata = CreateToolMetadata(command, commandPath);
+        _tools[toolMetadata.ToolName] = toolMetadata;
+    }
+
+    private static bool ShouldSkipCommand(IReadOnlyList<string> commandPath)
+    {
+        return commandPath.Count > 0 && NameComparer.Equals(commandPath[0], "mcp");
+    }
+
+    private static McpToolMetadata CreateToolMetadata(Command command, IReadOnlyList<string> commandPath)
     {
         var parameters = new List<McpParameterMetadata>();
 
-        foreach (var param in method.GetParameters())
+        foreach (var option in command.Options)
         {
-            // Skip CommonParameters - it's handled specially
-            if (param.ParameterType == typeof(CommonParameters))
-                continue;
+            parameters.Add(CreateOptionMetadata(option));
+        }
 
-            var paramMetadata = CreateParameterMetadata(param);
-            parameters.Add(paramMetadata);
+        foreach (var argument in command.Arguments)
+        {
+            parameters.Add(CreateArgumentMetadata(argument));
         }
 
         return new McpToolMetadata
         {
-            ToolName = $"{commandGroup}_{cliCommandAttr.Name}",
-            CommandGroup = commandGroup,
-            CommandName = cliCommandAttr.Name,
-            Description = cliCommandAttr.Description ?? GetMethodDescription(method),
-            Method = method,
-            CommandType = commandType,
+            ToolName = string.Join("_", commandPath),
+            CommandPath = commandPath.ToArray(),
+            CommandGroup = commandPath[0],
+            CommandName = commandPath[^1],
+            Description = command.Description ?? $"Execute {string.Join(" ", commandPath)} command",
             Parameters = parameters
         };
     }
 
-    private static McpParameterMetadata CreateParameterMetadata(ParameterInfo param)
+    private static McpParameterMetadata CreateOptionMetadata(Option option)
     {
-        var description = GetParameterDescription(param);
-        var isPutFileParameter = param.Name?.Equals("file", StringComparison.OrdinalIgnoreCase) == true &&
-                                 param.ParameterType == typeof(string);
-
         return new McpParameterMetadata
         {
-            Name = param.Name ?? "param",
-            Type = param.ParameterType,
-            IsOptional = param.IsOptional,
-            DefaultValue = param.IsOptional ? param.DefaultValue : null,
-            Description = description,
-            IsPutFileParameter = isPutFileParameter
+            Name = NormalizeName(option.Name),
+            CliName = option.Aliases.FirstOrDefault(alias => alias.StartsWith("--", StringComparison.Ordinal))
+                ?? option.Aliases.FirstOrDefault()
+                ?? $"--{NormalizeName(option.Name)}",
+            Type = option.ValueType,
+            Kind = McpParameterKind.Option,
+            IsOptional = option.Arity.MinimumNumberOfValues == 0,
+            Description = GetDescription(option),
+            Aliases = option.Aliases.Select(NormalizeName).Distinct(NameComparer).ToList(),
+            IsPutFileParameter = IsFileParameter(NormalizeName(option.Name), option.ValueType)
         };
     }
 
-    private static string? GetParameterDescription(ParameterInfo param)
+    private static McpParameterMetadata CreateArgumentMetadata(Argument argument)
     {
-        // Check for CliOption attribute
-        var optionAttr = param.GetCustomAttribute<CliOptionAttribute>();
-        if (optionAttr?.Description != null)
-            return optionAttr.Description;
+        var argumentName = NormalizeName(argument.Name);
 
-        // Check for CliArgument attribute
-        var argAttr = param.GetCustomAttribute<CliArgumentAttribute>();
-        if (argAttr?.Description != null)
-            return argAttr.Description;
-
-        // Check for Description attribute
-        var descAttr = param.GetCustomAttribute<DescriptionAttribute>();
-        if (descAttr?.Description != null)
-            return descAttr.Description;
-
-        return null;
+        return new McpParameterMetadata
+        {
+            Name = argumentName,
+            CliName = argumentName,
+            Type = argument.ValueType,
+            Kind = McpParameterKind.Argument,
+            IsOptional = argument.Arity.MinimumNumberOfValues == 0,
+            Description = GetDescription(argument),
+            Aliases = new List<string> { argumentName },
+            IsPutFileParameter = IsFileParameter(argumentName, argument.ValueType)
+        };
     }
 
-    private static string GetMethodDescription(MethodInfo method)
+    private static string? GetDescription(Symbol symbol)
     {
-        // Check for Description attribute
-        var descAttr = method.GetCustomAttribute<DescriptionAttribute>();
-        if (descAttr?.Description != null)
-            return descAttr.Description;
+        return symbol.Description;
+    }
 
-        // Check for XML documentation (would require additional infrastructure)
-        return $"Execute {method.Name} command";
+    private static bool IsFileParameter(string name, Type type)
+    {
+        return type == typeof(string) && NameComparer.Equals(name, "file");
+    }
+
+    private static string NormalizeName(string name)
+    {
+        return name.TrimStart('-');
     }
 }
 
@@ -200,6 +171,11 @@ public class McpToolMetadata
     /// The full tool name (e.g., "vorgang_list")
     /// </summary>
     public string ToolName { get; set; } = "";
+
+    /// <summary>
+    /// The command path segments (e.g., ["vorgang", "list"])
+    /// </summary>
+    public IReadOnlyList<string> CommandPath { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// The command group (e.g., "vorgang")
@@ -217,19 +193,15 @@ public class McpToolMetadata
     public string Description { get; set; } = "";
 
     /// <summary>
-    /// The method to invoke
-    /// </summary>
-    public MethodInfo Method { get; set; } = null!;
-
-    /// <summary>
-    /// The type containing the method
-    /// </summary>
-    public Type CommandType { get; set; } = null!;
-
-    /// <summary>
     /// Parameters of the tool
     /// </summary>
     public List<McpParameterMetadata> Parameters { get; set; } = new();
+}
+
+public enum McpParameterKind
+{
+    Option,
+    Argument
 }
 
 /// <summary>
@@ -243,9 +215,19 @@ public class McpParameterMetadata
     public string Name { get; set; } = "";
 
     /// <summary>
+    /// CLI name or alias used when invoking the command.
+    /// </summary>
+    public string CliName { get; set; } = "";
+
+    /// <summary>
     /// Parameter type
     /// </summary>
     public Type Type { get; set; } = null!;
+
+    /// <summary>
+    /// Whether this is a positional argument or an option.
+    /// </summary>
+    public McpParameterKind Kind { get; set; }
 
     /// <summary>
     /// Whether the parameter is optional
@@ -261,6 +243,11 @@ public class McpParameterMetadata
     /// Parameter description
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Accepted parameter names from MCP JSON input.
+    /// </summary>
+    public List<string> Aliases { get; set; } = new();
 
     /// <summary>
     /// Whether this parameter represents a file path for a put command

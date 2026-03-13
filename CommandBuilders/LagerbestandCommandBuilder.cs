@@ -14,9 +14,12 @@ public static class LagerbestandCommandBuilder
 
         listCmd.SetHandler(async (format, filename, since) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new LagerbestandCommands();
-            await handler.GetList(commonParams, since);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new LagerbestandCommands();
+                await handler.GetList(commonParams, since);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, sinceOption);
 
         cmd.AddCommand(listCmd);

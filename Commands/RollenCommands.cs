@@ -1,11 +1,9 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
-using static IdasCli.CliAttributes;
 
 public class RollenCommands : CommandsBase
 {
-    [CliCommand("list", Description = "List all Rollen")]
     public async Task List(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -14,10 +12,9 @@ public class RollenCommands : CommandsBase
         await dumpOutput(commonParams, rollen);
     }
 
-    [CliCommand("get", Description = "Get a Rolle by GUID")]
     public async Task Get(
         CommonParameters commonParams,
-        [CliArgument(Description = "Rolle GUID")] Guid rolleGuid)
+        Guid rolleGuid)
     {
         var settings = await getSettings();
         RollenWebRoutinen client = new(settings);
@@ -26,7 +23,6 @@ public class RollenCommands : CommandsBase
         await dumpOutput(commonParams, rolle);
     }
 
-    [CliCommand("sample", Description = "Create a sample Rolle JSON")]
     public async Task Sample(CommonParameters commonParams)
     {
         var sample = new RolleDTO
@@ -38,18 +34,15 @@ public class RollenCommands : CommandsBase
             {
                 new BerechtigungDTO 
                 { 
-                    Code = "Vorgang.Lesen",
-                    ErklaerungsText = "Vorgänge lesen",
-                    Level = "Mandant"
+                    Code = "Vorgang.Lesen"
                 }
             }.ToArray()
         };
         await dumpOutput(commonParams, sample);
     }
 
-    [CliCommand("put", Description = "Save a Rolle from JSON file")]
     public async Task Put(
-        [CliArgument(Description = "Path to JSON file")] string file)
+        string file)
     {
         var settings = await getSettings();
         RollenWebRoutinen client = new(settings);

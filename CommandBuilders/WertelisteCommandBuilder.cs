@@ -13,9 +13,12 @@ public static class WertelisteCommandBuilder
 
         listCmd.SetHandler(async (format, filename, includeAuto) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new WertelisteCommands();
-            await handler.GetList(commonParams, includeAuto);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new WertelisteCommands();
+                await handler.GetList(commonParams, includeAuto);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, includeAutoListOption);
 
         cmd.AddCommand(listCmd);
@@ -29,9 +32,12 @@ public static class WertelisteCommandBuilder
 
         getCmd.SetHandler(async (format, filename, guid, includeAuto) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new WertelisteCommands();
-            await handler.GetWerteliste(guid, commonParams, includeAuto);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new WertelisteCommands();
+                await handler.GetWerteliste(guid, commonParams, includeAuto);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, guidArgument, includeAutoGetOption);
 
         cmd.AddCommand(getCmd);
@@ -43,9 +49,12 @@ public static class WertelisteCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new WertelisteCommands();
-            await handler.PutWerteliste(file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new WertelisteCommands();
+                await handler.PutWerteliste(file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);

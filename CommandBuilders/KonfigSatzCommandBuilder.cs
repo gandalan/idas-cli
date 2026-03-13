@@ -11,9 +11,12 @@ public static class KonfigSatzCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KonfigSatzCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KonfigSatzCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class KonfigSatzCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KonfigSatzCommands();
-            await handler.PutKonfigSatz(file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KonfigSatzCommands();
+                await handler.PutKonfigSatz(file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -560,4 +561,145 @@ public class CommandsBase
         public static AuthResult Succeeded() => new() { IsSuccessful = true };
         public static AuthResult Failed(string message) => new() { IsSuccessful = false, ErrorMessage = message };
     }
+
+    #region Exception Handling
+
+    /// <summary>
+    /// Executes an async action with centralized exception handling.
+    /// Returns exit code: 0 for success, 1 for error.
+    /// </summary>
+    public static async Task<int> ExecuteWithErrorHandling(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Executes an async action with centralized exception handling and returns a result.
+    /// </summary>
+    protected static async Task<T?> ExecuteWithErrorHandling<T>(Func<Task<T>> action) where T : class
+    {
+        try
+        {
+            return await action();
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Handles exceptions and prints user-friendly error messages.
+    /// Suppresses stack traces and internal details.
+    /// </summary>
+    private static void HandleException(Exception ex)
+    {
+        // Don't output anything in silent mode (MCP)
+        if (IsSilentMode)
+        {
+            return;
+        }
+
+        string userMessage = GetUserFriendlyErrorMessage(ex);
+        
+        // Output to stderr
+        try
+        {
+            Console.Error.WriteLine($"Error: {userMessage}");
+        }
+        catch
+        {
+            // Console might be closed - ignore
+        }
+    }
+
+    /// <summary>
+    /// Extracts a user-friendly error message from an exception.
+    /// Handles specific exception types from the IDAS library.
+    /// </summary>
+    private static string GetUserFriendlyErrorMessage(Exception ex)
+    {
+        if (ex == null)
+        {
+            return "An unknown error occurred.";
+        }
+
+        // Check for HTTP exceptions and specific error types
+        var exceptionType = ex.GetType().Name;
+        var message = ex.Message;
+
+        // Handle ApiUnauthorizedException or 401 responses
+        if (exceptionType.Contains("Unauthorized") || 
+            message.Contains("401") || 
+            message.Contains("Unauthorized"))
+        {
+            return "Authentication failed. Please run 'idas benutzer login' to authenticate.";
+        }
+
+        // Handle forbidden/access denied (403)
+        if (message.Contains("403") || message.Contains("Forbidden"))
+        {
+            return "Access denied. You don't have permission to perform this action.";
+        }
+
+        // Handle not found (404)
+        if (message.Contains("404") || message.Contains("Not Found"))
+        {
+            return "The requested resource was not found.";
+        }
+
+        // Handle server errors (5xx)
+        if (message.Contains("500") || message.Contains("Internal Server Error"))
+        {
+            return "The server encountered an error. Please try again later.";
+        }
+
+        // Handle invalid operation exceptions (usually configuration issues)
+        if (ex is InvalidOperationException)
+        {
+            return message;
+        }
+
+        // Handle file not found
+        if (ex is FileNotFoundException fileEx)
+        {
+            return $"File not found: {fileEx.FileName}";
+        }
+
+        // Handle JSON parsing errors
+        if (ex is JsonException)
+        {
+            return "Invalid JSON format. Please check your input file.";
+        }
+
+        // For other exceptions, show the message but truncate if it's too long
+        // This prevents stack traces from leaking through
+        if (message.Length > 200)
+        {
+            message = message.Substring(0, 200) + "...";
+        }
+
+        // Clean up the message - remove newlines and stack trace indicators
+        message = message.Replace("\n", " ").Replace("\r", " ");
+        
+        // If message looks like a stack trace entry (contains " at " or file paths), provide generic message
+        if (message.Contains("   at ") || message.Contains(".cs:line "))
+        {
+            return "An unexpected error occurred. Please try again.";
+        }
+
+        return message;
+    }
+
+    #endregion
 }

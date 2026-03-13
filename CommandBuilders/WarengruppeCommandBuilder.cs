@@ -11,9 +11,12 @@ public static class WarengruppeCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new WarengruppeCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new WarengruppeCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);

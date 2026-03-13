@@ -11,9 +11,12 @@ public static class RollenCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new RollenCommands();
-            await handler.List(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new RollenCommands();
+                await handler.List(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class RollenCommandBuilder
 
         getCmd.SetHandler(async (format, filename, rolleGuid) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new RollenCommands();
-            await handler.Get(commonParams, rolleGuid);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new RollenCommands();
+                await handler.Get(commonParams, rolleGuid);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, rolleGuidArg);
 
         cmd.AddCommand(getCmd);
@@ -37,9 +43,12 @@ public static class RollenCommandBuilder
 
         sampleCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new RollenCommands();
-            await handler.Sample(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new RollenCommands();
+                await handler.Sample(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(sampleCmd);
@@ -51,8 +60,11 @@ public static class RollenCommandBuilder
 
         putCmd.SetHandler(async (file) =>
         {
-            var handler = new RollenCommands();
-            await handler.Put(file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new RollenCommands();
+                await handler.Put(file);
+            });
         }, fileArg);
 
         cmd.AddCommand(putCmd);

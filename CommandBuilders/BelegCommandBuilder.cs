@@ -24,8 +24,11 @@ public static class BelegCommandBuilder
 
         listCmd.SetHandler(async (jahr, format, separator, belegart, filename, includeArchive) =>
         {
-            var handler = new BelegCommands();
-            await handler.List(jahr, format, separator, belegart, filename, includeArchive);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BelegCommands();
+                await handler.List(jahr, format, separator, belegart, filename, includeArchive);
+            });
         }, jahrOption, formatOption, separatorOption, belegartOption, filenameOption, includeArchiveOption);
 
         cmd.AddCommand(listCmd);

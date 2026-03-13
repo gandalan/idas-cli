@@ -11,9 +11,12 @@ public static class SerieCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new SerieCommands();
-            await handler.GetSerienList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new SerieCommands();
+                await handler.GetSerienList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class SerieCommandBuilder
 
         getCmd.SetHandler(async (format, filename, serie) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new SerieCommands();
-            await handler.GetSerie(commonParams, serie);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new SerieCommands();
+                await handler.GetSerie(commonParams, serie);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, serieArgument);
 
         cmd.AddCommand(getCmd);
@@ -39,9 +45,12 @@ public static class SerieCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new SerieCommands();
-            await handler.PutSerie(file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new SerieCommands();
+                await handler.PutSerie(file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);
@@ -51,9 +60,12 @@ public static class SerieCommandBuilder
 
         sampleCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new SerieCommands();
-            await handler.CreateSampleSerie(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new SerieCommands();
+                await handler.CreateSampleSerie(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(sampleCmd);

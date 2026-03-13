@@ -31,7 +31,7 @@ public class DynamicMcpToolContainer
             if (_initialized) return;
 
             // Discover all tools
-            var discoveredTools = RuntimeMcpToolProvider.DiscoverTools();
+            var discoveredTools = RuntimeMcpToolProvider.DiscoverTools(rootCommand);
             foreach (var (toolName, metadata) in discoveredTools)
             {
                 _tools[toolName] = metadata;
@@ -59,17 +59,7 @@ public class DynamicMcpToolContainer
     /// This is registered as a catch-all tool that dispatches to the appropriate CLI command.
     /// </summary>
     [McpServerTool(Name = "idas")]
-    [Description("Execute IDAS CLI commands. Available commands: " +
-        "vorgang_list, vorgang_get, vorgang_put, vorgang_sample, vorgang_archive, vorgang_archive-bulk, vorgang_activate, " +
-        "benutzer_login, benutzer_logout, benutzer_list, benutzer_password-reset, benutzer_change-password, " +
-        "kontakt_list, kontakt_get, kontakt_put, kontakt_sample, " +
-        "beleg_list, artikel_list, artikel_put, artikel_sample, " +
-        "av_list, av_get, lagerbestand_list, lagerbuchung_list, lagerbuchung_put, lagerbuchung_sample, " +
-        "warengruppe_list, serie_list, serie_get, serie_put, serie_sample, " +
-        "rollen_listrollen, variante_list, variante_get, variante_put, variante_guids, " +
-        "uidefinition_list, uidefinition_get, uidefinition_put, " +
-        "konfigsatz_list, konfigsatz_put, werteliste_list, werteliste_get, werteliste_put, " +
-        "gsql_list, gsql_get, gsql_reset")]
+    [Description("Execute IDAS CLI commands discovered from the registered System.CommandLine command tree.")]
     public async Task<object> InvokeIdasCommand(
         [Description("The command to execute (e.g., 'vorgang_list', 'kontakt_get')")] string command,
         [Description("JSON object with command parameters")] string? parameters = null)

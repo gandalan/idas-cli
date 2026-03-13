@@ -4,18 +4,16 @@ using System.Text.Json;
 using Gandalan.IDAS.Client.Contracts.Contracts;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
-using static IdasCli.CliAttributes;
 
 public class BelegCommands : CommandsBase
 {
-    [CliCommand("list", Description = "List all Belege")]
     public async Task List(
-        [CliOption(Description = "Year to filter (0 = all)")] int jahr = 0,
-        [CliOption(Description = "Output format (json or csv)")] string format = "json",
-        [CliOption(Description = "CSV separator")] string separator = ";",
-        [CliOption(Description = "Filter by Belegart")] string? belegart = null,
-        [CliOption(Description = "Output filename")] string? filename = null,
-        [CliOption(Description = "Include archived Belege")] bool includeArchive = true
+        int jahr = 0,
+        string format = "json",
+        string separator = ";",
+        string? belegart = null,
+        string? filename = null,
+        bool includeArchive = true
     )
     {
         var settings = await getSettings();

@@ -11,9 +11,12 @@ public static class UIDefinitionCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new UIDefinitionCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new UIDefinitionCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class UIDefinitionCommandBuilder
 
         getCmd.SetHandler(async (format, filename, guid) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new UIDefinitionCommands();
-            await handler.GetUIDefinition(commonParams, guid);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new UIDefinitionCommands();
+                await handler.GetUIDefinition(commonParams, guid);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, guidArgument);
 
         cmd.AddCommand(getCmd);
@@ -39,9 +45,12 @@ public static class UIDefinitionCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new UIDefinitionCommands();
-            await handler.PutUIDefinition(commonParams, file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new UIDefinitionCommands();
+                await handler.PutUIDefinition(commonParams, file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);

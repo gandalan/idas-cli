@@ -11,9 +11,12 @@ public static class ArtikelCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new ArtikelCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new ArtikelCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,8 +28,11 @@ public static class ArtikelCommandBuilder
 
         putCmd.SetHandler(async (file) =>
         {
-            var handler = new ArtikelCommands();
-            await handler.PutArtikel(file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new ArtikelCommands();
+                await handler.PutArtikel(file);
+            });
         }, fileArgument);
 
         cmd.AddCommand(putCmd);
@@ -36,9 +42,12 @@ public static class ArtikelCommandBuilder
 
         sampleCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new ArtikelCommands();
-            await handler.CreateSample(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new ArtikelCommands();
+                await handler.CreateSample(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(sampleCmd);

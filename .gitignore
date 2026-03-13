@@ -12,3 +12,4 @@ dist/*
 .cocoindex_code/
 *.md
 !README.md
+test-role-integration.sh

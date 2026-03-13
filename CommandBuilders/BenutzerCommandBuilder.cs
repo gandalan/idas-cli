@@ -13,8 +13,11 @@ public static class BenutzerCommandBuilder
 
         loginCmd.SetHandler(async (timeout) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.Login(timeout);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.Login(timeout);
+            });
         }, timeoutOption);
 
         cmd.AddCommand(loginCmd);
@@ -24,8 +27,11 @@ public static class BenutzerCommandBuilder
 
         logoutCmd.SetHandler(async () =>
         {
-            var handler = new BenutzerCommands();
-            await handler.Logout();
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.Logout();
+            });
         });
 
         cmd.AddCommand(logoutCmd);
@@ -35,9 +41,12 @@ public static class BenutzerCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new BenutzerCommands();
-            await handler.List(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new BenutzerCommands();
+                await handler.List(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -49,8 +58,11 @@ public static class BenutzerCommandBuilder
 
         passwordResetCmd.SetHandler(async (email) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.PasswordReset(email);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.PasswordReset(email);
+            });
         }, emailArgument);
 
         cmd.AddCommand(passwordResetCmd);
@@ -66,8 +78,11 @@ public static class BenutzerCommandBuilder
 
         changePasswordCmd.SetHandler(async (username, oldPassword, newPassword) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.ChangePassword(username, oldPassword, newPassword);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.ChangePassword(username, oldPassword, newPassword);
+            });
         }, usernameArgument, oldPasswordArgument, newPasswordArgument);
 
         cmd.AddCommand(changePasswordCmd);
@@ -79,9 +94,12 @@ public static class BenutzerCommandBuilder
 
         getCmd.SetHandler(async (format, filename, benutzerGuid) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new BenutzerCommands();
-            await handler.Get(commonParams, benutzerGuid);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new BenutzerCommands();
+                await handler.Get(commonParams, benutzerGuid);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, benutzerGuidArg);
 
         cmd.AddCommand(getCmd);
@@ -95,8 +113,11 @@ public static class BenutzerCommandBuilder
 
         addRoleCmd.SetHandler(async (benutzerGuid, rolleGuid) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.AddRole(benutzerGuid, rolleGuid);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.AddRole(benutzerGuid, rolleGuid);
+            });
         }, addRoleUserArg, addRoleRoleArg);
 
         cmd.AddCommand(addRoleCmd);
@@ -110,8 +131,11 @@ public static class BenutzerCommandBuilder
 
         removeRoleCmd.SetHandler(async (benutzerGuid, rolleGuid) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.RemoveRole(benutzerGuid, rolleGuid);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.RemoveRole(benutzerGuid, rolleGuid);
+            });
         }, removeRoleUserArg, removeRoleRoleArg);
 
         cmd.AddCommand(removeRoleCmd);
@@ -125,8 +149,11 @@ public static class BenutzerCommandBuilder
 
         setRollenCmd.SetHandler(async (benutzerGuid, file) =>
         {
-            var handler = new BenutzerCommands();
-            await handler.SetRollen(benutzerGuid, file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new BenutzerCommands();
+                await handler.SetRollen(benutzerGuid, file);
+            });
         }, setRollenUserArg, setRollenFileArg);
 
         cmd.AddCommand(setRollenCmd);

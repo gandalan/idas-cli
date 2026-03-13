@@ -5,13 +5,11 @@ using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.Client.Settings;
 using Gandalan.IDAS.WebApi.DTO;
 using IDAS.Cli.SSO;
-using static IdasCli.CliAttributes;
 
 public class BenutzerCommands : CommandsBase
 {
-    [CliCommand("login", Description = "Login via SSO")]
     public async Task Login(
-        [CliOption(Description = "Timeout in seconds")] int timeoutSeconds)
+        int timeoutSeconds)
     {
         var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
         var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
@@ -77,7 +75,6 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [CliCommand("logout", Description = "Logout and clear session")]
     public async Task Logout()
     {
         try
@@ -94,7 +91,6 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [CliCommand("list", Description = "List all users")]
     public async Task List(CommonParameters commonParams)
     {
         var settings = await getSettings();
@@ -103,10 +99,9 @@ public class BenutzerCommands : CommandsBase
         await dumpOutput(commonParams, data);
     }
 
-    [CliCommand("get", Description = "Get user by GUID with roles")]
     public async Task Get(
         CommonParameters commonParams,
-        [CliArgument(Description = "User GUID")] Guid benutzerGuid)
+        Guid benutzerGuid)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);
@@ -114,10 +109,9 @@ public class BenutzerCommands : CommandsBase
         await dumpOutput(commonParams, benutzer);
     }
 
-    [CliCommand("add-role", Description = "Add a role to a user")]
     public async Task AddRole(
-        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
-        [CliArgument(Description = "Role GUID")] Guid rolleGuid)
+        Guid benutzerGuid,
+        Guid rolleGuid)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);
@@ -150,10 +144,9 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [CliCommand("remove-role", Description = "Remove a role from a user")]
     public async Task RemoveRole(
-        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
-        [CliArgument(Description = "Role GUID")] Guid rolleGuid)
+        Guid benutzerGuid,
+        Guid rolleGuid)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);
@@ -172,10 +165,9 @@ public class BenutzerCommands : CommandsBase
         }
     }
 
-    [CliCommand("set-rollen", Description = "Set user roles from JSON file (replaces all)")]
     public async Task SetRollen(
-        [CliArgument(Description = "User GUID")] Guid benutzerGuid,
-        [CliArgument(Description = "Path to JSON file with roles array")] string file)
+        Guid benutzerGuid,
+        string file)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);
@@ -188,9 +180,8 @@ public class BenutzerCommands : CommandsBase
         Console.WriteLine($"{rollen.Count} Rollen wurden zugewiesen.");
     }
 
-    [CliCommand("password-reset", Description = "Request password reset email")]
     public async Task PasswordReset(
-        [CliArgument(Description = "User email address")] string email)
+        string email)
     {
         // Get minimal settings without requiring full authentication
         var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
@@ -210,11 +201,10 @@ public class BenutzerCommands : CommandsBase
         Console.WriteLine($"Password reset email has been sent to {email}");
     }
 
-    [CliCommand("change-password", Description = "Change user password")]
     public async Task ChangePassword(
-        [CliArgument(Description = "Username")] string username,
-        [CliArgument(Description = "Current password")] string oldPassword,
-        [CliArgument(Description = "New password")] string newPassword)
+        string username,
+        string oldPassword,
+        string newPassword)
     {
         var settings = await getSettings();
         var client = new BenutzerWebRoutinen(settings);

@@ -11,9 +11,12 @@ public static class VarianteCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new VarianteCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new VarianteCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -30,9 +33,12 @@ public static class VarianteCommandBuilder
 
         getCmd.SetHandler(async (format, filename, guid, includeKonfigs, includeUIDefs) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new VarianteCommands();
-            await handler.GetVariante(commonParams, guid, includeKonfigs, includeUIDefs);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new VarianteCommands();
+                await handler.GetVariante(commonParams, guid, includeKonfigs, includeUIDefs);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, guidArgument, includeKonfigsOption, includeUIDefsOption);
 
         cmd.AddCommand(getCmd);
@@ -44,9 +50,12 @@ public static class VarianteCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new VarianteCommands();
-            await handler.PutVariante(commonParams, file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new VarianteCommands();
+                await handler.PutVariante(commonParams, file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);
@@ -56,9 +65,12 @@ public static class VarianteCommandBuilder
 
         guidsCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new VarianteCommands();
-            await handler.GetAllGuids(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new VarianteCommands();
+                await handler.GetAllGuids(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(guidsCmd);

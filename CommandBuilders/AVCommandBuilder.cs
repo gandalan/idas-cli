@@ -14,9 +14,12 @@ public static class AVCommandBuilder
 
         listCmd.SetHandler(async (format, filename, since) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new AVCommands();
-            await handler.GetList(commonParams, since);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new AVCommands();
+                await handler.GetList(commonParams, since);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, sinceOption);
 
         cmd.AddCommand(listCmd);
@@ -28,9 +31,12 @@ public static class AVCommandBuilder
 
         getCmd.SetHandler(async (format, filename, pos) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new AVCommands();
-            await handler.GetPos(commonParams, pos);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new AVCommands();
+                await handler.GetPos(commonParams, pos);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, posArgument);
 
         cmd.AddCommand(getCmd);

@@ -89,144 +89,33 @@ public class DynamicMcpToolHandler
                 StackTrace = ex.StackTrace
             };
         }
-    }
-
-    /// <summary>
-    /// Invokes a CLI command using direct method invocation (fallback method).
-    /// This is used when the root command approach isn't suitable.
-    /// </summary>
-    public async Task<object> InvokeDirectAsync(McpToolMetadata toolMetadata, Dictionary<string, object?> parameters)
-    {
-        try
+        finally
         {
-            // Create an instance of the command class
-            var commandInstance = Activator.CreateInstance(toolMetadata.CommandType);
-            if (commandInstance == null)
-            {
-                return new
-                {
-                    Success = false,
-                    Error = $"Failed to create instance of {toolMetadata.CommandType.Name}"
-                };
-            }
-
-            // Prepare method parameters
-            var methodParams = PrepareMethodParameters(toolMetadata, parameters);
-
-            // Capture output
-            var originalOutput = Console.Out;
-            var stringWriter = new StringWriter();
-
-            try
-            {
-                Console.SetOut(stringWriter);
-
-                // Invoke the method
-                var result = toolMetadata.Method.Invoke(commandInstance, methodParams);
-
-                // Handle async methods
-                if (result is Task task)
-                {
-                    await task;
-                }
-
-                var output = stringWriter.ToString();
-
-                // Try to parse output as JSON
-                if (!string.IsNullOrWhiteSpace(output))
-                {
-                    try
-                    {
-                        var jsonObject = JsonSerializer.Deserialize<object>(output);
-                        return new
-                        {
-                            Success = true,
-                            Data = jsonObject
-                        };
-                    }
-                    catch (JsonException)
-                    {
-                        return new
-                        {
-                            Success = true,
-                            Data = output.Trim()
-                        };
-                    }
-                }
-
-                return new
-                {
-                    Success = true,
-                    Message = $"Command {toolMetadata.ToolName} executed successfully"
-                };
-            }
-            finally
-            {
-                Console.SetOut(originalOutput);
-            }
-        }
-        catch (Exception ex)
-        {
-            var innerException = ex.InnerException ?? ex;
-            return new
-            {
-                Success = false,
-                Error = innerException.Message,
-                StackTrace = innerException.StackTrace
-            };
+            Cleanup();
         }
     }
 
     private string[] BuildCommandLineArgs(McpToolMetadata toolMetadata, Dictionary<string, object?> parameters)
     {
-        var args = new List<string>
-        {
-            toolMetadata.CommandGroup,
-            toolMetadata.CommandName
-        };
+        var args = new List<string>(toolMetadata.CommandPath);
 
-        foreach (var param in toolMetadata.Parameters)
+        foreach (var param in toolMetadata.Parameters.Where(parameter => parameter.Kind == McpParameterKind.Option))
         {
-            // Find matching parameter in input
-            var matchingKey = parameters.Keys.FirstOrDefault(k =>
-                k.Equals(param.Name, StringComparison.OrdinalIgnoreCase));
+            var matchingKey = FindMatchingKey(parameters, param);
 
             if (matchingKey == null)
             {
-                // Skip optional parameters without values
-                if (param.IsOptional)
-                    continue;
-
-                // Use default value if available
-                if (param.DefaultValue != null && param.DefaultValue != DBNull.Value)
-                {
-                    args.Add($"--{param.Name}");
-                    args.Add(Convert.ToString(param.DefaultValue) ?? "");
-                }
                 continue;
             }
 
             var value = parameters[matchingKey];
 
-            // Handle special case for file parameters in put commands
-            if (param.IsPutFileParameter && value is string jsonContent)
-            {
-                var tempFile = Path.GetTempFileName();
-                File.WriteAllText(tempFile, jsonContent);
-                // Store for cleanup
-                ScheduleCleanup(tempFile);
-                args.Add(tempFile);
-                continue;
-            }
-
             // Skip null values for optional parameters
             if (value == null && param.IsOptional)
                 continue;
 
-            // Add option flag for named parameters
-            args.Add($"--{param.Name}");
+            args.Add(param.CliName);
 
-            // Add value
             if (value != null)
             {
                 var stringValue = ConvertParameterToString(value, param.Type);
@@ -234,58 +123,39 @@ public class DynamicMcpToolHandler
             }
         }
 
-        return args.ToArray();
-    }
-
-    private object?[] PrepareMethodParameters(McpToolMetadata toolMetadata, Dictionary<string, object?> parameters)
-    {
-        var methodParams = toolMetadata.Method.GetParameters();
-        var paramValues = new List<object?>();
-
-        foreach (var methodParam in methodParams)
+        foreach (var param in toolMetadata.Parameters.Where(parameter => parameter.Kind == McpParameterKind.Argument))
         {
-            // Handle CommonParameters - always provide json format for MCP
-            if (methodParam.ParameterType == typeof(CommonParameters))
+            var matchingKey = FindMatchingKey(parameters, param);
+            if (matchingKey == null)
             {
-                paramValues.Add(new CommonParameters(Format: "json", FileName: null));
+                if (param.IsOptional)
+                    continue;
+
+                throw new ArgumentException($"Missing required parameter '{param.Name}' for command '{toolMetadata.ToolName}'.");
+            }
+
+            var value = parameters[matchingKey];
+            if (param.IsPutFileParameter && value is string jsonContent)
+            {
+                var tempFile = Path.GetTempFileName();
+                File.WriteAllText(tempFile, jsonContent);
+                ScheduleCleanup(tempFile);
+                args.Add(tempFile);
                 continue;
             }
 
-            // Find matching parameter
-            var matchingKey = parameters.Keys.FirstOrDefault(k =>
-                k.Equals(methodParam.Name, StringComparison.OrdinalIgnoreCase));
+            if (value == null)
+            {
+                if (param.IsOptional)
+                    continue;
 
-            if (matchingKey != null)
-            {
-                var value = parameters[matchingKey];
+                throw new ArgumentException($"Parameter '{param.Name}' cannot be null for command '{toolMetadata.ToolName}'.");
+            }
 
-                // Handle file parameters
-                if (methodParam.ParameterType == typeof(string) &&
-                    methodParam.Name?.Equals("file", StringComparison.OrdinalIgnoreCase) == true &&
-                    value is string jsonContent)
-                {
-                    var tempFile = Path.GetTempFileName();
-                    File.WriteAllText(tempFile, jsonContent);
-                    ScheduleCleanup(tempFile);
-                    paramValues.Add(tempFile);
-                }
-                else
-                {
-                    paramValues.Add(ConvertParameterValue(value, methodParam.ParameterType));
-                }
-            }
-            else if (methodParam.IsOptional)
-            {
-                paramValues.Add(methodParam.DefaultValue == DBNull.Value ? null : methodParam.DefaultValue);
-            }
-            else
-            {
-                // Required parameter missing
-                paramValues.Add(null);
-            }
+            args.Add(ConvertParameterToString(value, param.Type));
         }
 
-        return paramValues.ToArray();
+        return args.ToArray();
     }
 
     private string ConvertParameterToString(object value, Type targetType)
@@ -401,6 +271,18 @@ public class DynamicMcpToolHandler
         {
             return value;
         }
+    }
+
+    private static string? FindMatchingKey(Dictionary<string, object?> parameters, McpParameterMetadata parameter)
+    {
+        return parameters.Keys.FirstOrDefault(key =>
+            parameter.Aliases.Any(alias => alias.Equals(NormalizeKey(key), StringComparison.OrdinalIgnoreCase))
+            || parameter.Name.Equals(NormalizeKey(key), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizeKey(string key)
+    {
+        return key.Trim().TrimStart('-');
     }
 
     // Track temp files for cleanup

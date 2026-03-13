@@ -1,11 +1,9 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
-using static IdasCli.CliAttributes;
 
 public class VorgangCommands : CommandsBase
 {
-    [CliCommand("list", Description = "List all Vorgänge")]
     public async Task GetList(
         CommonParameters commonParams,
         int? jahr = null,
@@ -24,10 +22,9 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, activeList);
     }
 
-    [CliCommand("get", Description = "Get a single Vorgang by GUID")]
     public async Task GetVorgang(
         CommonParameters commonParams,
-        [CliArgument(Description = "Vorgang GUID")] Guid vorgang)
+        Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -35,10 +32,9 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, response);
     }
 
-    [CliCommand("put", Description = "Update a Vorgang from JSON file")]
     public async Task PutVorgang(
         CommonParameters commonParams,
-        [CliArgument(Description = "Path to JSON file")] string file)
+        string file)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -51,7 +47,6 @@ public class VorgangCommands : CommandsBase
         } else throw new Exception("Invalid JSON file");
     }
 
-    [CliCommand("sample", Description = "Create a sample Vorgang JSON")]
     public async Task CreateSample(CommonParameters commonParams)
     {
         var posGuid = Guid.NewGuid();
@@ -104,10 +99,9 @@ public class VorgangCommands : CommandsBase
         });
     }
 
-    [CliCommand("archive", Description = "Archive a Vorgang")]
     public async Task ArchiveVorgang(
         CommonParameters commonParams,
-        [CliArgument(Description = "Vorgang GUID to archive")] Guid vorgang)
+        Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -115,10 +109,9 @@ public class VorgangCommands : CommandsBase
         await dumpOutput(commonParams, new { Status = "Archiviert" });
     }
 
-    [CliCommand("archive-bulk", Description = "Archive multiple Vorgänge by GUIDs")]
     public async Task ArchiveVorgangBulk(
         CommonParameters commonParams,
-        [CliArgument(Description = "Comma-separated list of Vorgang GUIDs")] string vorgaenge)
+        string vorgaenge)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);
@@ -148,10 +141,9 @@ public class VorgangCommands : CommandsBase
         }
     }
 
-    [CliCommand("activate", Description = "Activate (unarchive) a Vorgang")]
     public async Task ActivateVorgang(
         CommonParameters commonParams,
-        [CliArgument(Description = "Vorgang GUID to activate")] Guid vorgang)
+        Guid vorgang)
     {
         var settings = await getSettings();
         VorgangWebRoutinen client = new(settings);

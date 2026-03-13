@@ -16,9 +16,12 @@ public static class LagerbuchungCommandBuilder
 
         listCmd.SetHandler(async (format, filename, from, till) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new LagerbuchungCommands();
-            await handler.GetList(commonParams, from, till);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new LagerbuchungCommands();
+                await handler.GetList(commonParams, from, till);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fromOption, tillOption);
 
         cmd.AddCommand(listCmd);
@@ -30,9 +33,12 @@ public static class LagerbuchungCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new LagerbuchungCommands();
-            await handler.PutBuchung(commonParams, file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new LagerbuchungCommands();
+                await handler.PutBuchung(commonParams, file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);
@@ -42,9 +48,12 @@ public static class LagerbuchungCommandBuilder
 
         sampleCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new LagerbuchungCommands();
-            await handler.CreateSample(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new LagerbuchungCommands();
+                await handler.CreateSample(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(sampleCmd);

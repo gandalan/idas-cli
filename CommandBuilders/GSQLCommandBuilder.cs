@@ -11,9 +11,12 @@ public static class GSQLCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new gSQLCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new gSQLCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class GSQLCommandBuilder
 
         getCmd.SetHandler(async (format, filename, beleg) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new gSQLCommands();
-            await handler.GetBeleg(commonParams, beleg);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new gSQLCommands();
+                await handler.GetBeleg(commonParams, beleg);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, belegArgument);
 
         cmd.AddCommand(getCmd);
@@ -39,8 +45,11 @@ public static class GSQLCommandBuilder
 
         resetCmd.SetHandler(async (since) =>
         {
-            var handler = new gSQLCommands();
-            await handler.Reset(since);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var handler = new gSQLCommands();
+                await handler.Reset(since);
+            });
         }, sinceArgument);
 
         cmd.AddCommand(resetCmd);

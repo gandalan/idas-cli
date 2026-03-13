@@ -16,9 +16,12 @@ public static class McpServerCommandBuilder
 
         serveCmd.SetHandler(async () =>
         {
-            // Use the McpServerCommand class directly
-            var serverCommand = new McpServerCommand();
-            await serverCommand.Serve();
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                // Use the McpServerCommand class directly
+                var serverCommand = new McpServerCommand();
+                await serverCommand.Serve();
+            });
         });
 
         cmd.AddCommand(serveCmd);

@@ -1,13 +1,11 @@
 using System.Text.Json;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
-using static IdasCli.CliAttributes;
 
 public class AVCommands : CommandsBase
 {
-    [CliCommand("list", Description = "List all AV positions")]
     public async Task GetList(
         CommonParameters commonParams,
-        [CliOption(Description = "Only items changed since this date")] DateTime? since)
+        DateTime? since)
     {
         var settings = await getSettings();
         AVWebRoutinen client = new(settings);
@@ -16,10 +14,9 @@ public class AVCommands : CommandsBase
         await dumpOutput(commonParams, reduced);
     }
 
-    [CliCommand("get", Description = "Get AV position by GUID or PCode")]
     public async Task GetPos(
         CommonParameters commonParams,
-        [CliArgument(Description = "AVPos GUID or PCode")] string? pos)
+        string? pos)
     {
         Guid.TryParse(pos, out var guid);
         

@@ -11,9 +11,12 @@ public static class KontaktCommandBuilder
 
         listCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KontaktCommands();
-            await handler.GetList(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KontaktCommands();
+                await handler.GetList(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(listCmd);
@@ -25,9 +28,12 @@ public static class KontaktCommandBuilder
 
         getCmd.SetHandler(async (format, filename, kontakt) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KontaktCommands();
-            await handler.GetKontakt(commonParams, kontakt);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KontaktCommands();
+                await handler.GetKontakt(commonParams, kontakt);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, kontaktArgument);
 
         cmd.AddCommand(getCmd);
@@ -39,9 +45,12 @@ public static class KontaktCommandBuilder
 
         putCmd.SetHandler(async (format, filename, file) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KontaktCommands();
-            await handler.PutKontakt(commonParams, file);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KontaktCommands();
+                await handler.PutKontakt(commonParams, file);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName, fileArgument);
 
         cmd.AddCommand(putCmd);
@@ -51,9 +60,12 @@ public static class KontaktCommandBuilder
 
         sampleCmd.SetHandler(async (format, filename) =>
         {
-            var commonParams = new CommonParameters(format, filename);
-            var handler = new KontaktCommands();
-            await handler.CreateSample(commonParams);
+            await CommandsBase.ExecuteWithErrorHandling(async () =>
+            {
+                var commonParams = new CommonParameters(format, filename);
+                var handler = new KontaktCommands();
+                await handler.CreateSample(commonParams);
+            });
         }, GlobalOptions.Format, GlobalOptions.FileName);
 
         cmd.AddCommand(sampleCmd);
