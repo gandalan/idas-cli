@@ -1,13 +1,18 @@
-using System.CommandLine;
-using IdasCli.Mcp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
+using Spectre.Console.Cli;
 
-public class McpServerCommand : CommandsBase
+namespace IdasCli.Commands;
+
+/// <summary>
+/// MCP Server command - provides Model Context Protocol server functionality.
+/// This is a simplified version that starts the MCP server without dynamic tool registration.
+/// </summary>
+public class McpServerCommand : AsyncCommand<GlobalSettings>
 {
-    public async Task Serve()
+    public override async Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
     {
         // Enable silent mode to suppress console output from commands
         CommandsBase.IsSilentMode = true;

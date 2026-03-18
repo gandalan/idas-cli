@@ -1,14 +1,16 @@
 using System.Text.Json;
+using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
-public class UIDefinitionCommands : CommandsBase
+namespace IdasCli.Commands;
+
+public class UIDefinitionListCommand : AsyncCommand<GlobalSettings>
 {
     public async Task GetList(CommonParameters commonParams)
     {
-        var settings = await getSettings();
-        UIWebRoutinen client = new(settings);
-        await dumpOutput(commonParams, await client.GetAllAsync());
+        _authService = authService;
+        _outputService = outputService;
     }
 
     public async Task GetUIDefinition(

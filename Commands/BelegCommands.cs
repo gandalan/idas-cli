@@ -1,11 +1,14 @@
 using System.Globalization;
+using IdasCli.Services;
 using System.Text;
 using System.Text.Json;
 using Gandalan.IDAS.Client.Contracts.Contracts;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
 
-public class BelegCommands : CommandsBase
+namespace IdasCli.Commands;
+
+public class BelegListCommand : AsyncCommand<BelegListCommand.Settings>
 {
     public async Task List(
         int jahr = 0,
@@ -16,65 +19,102 @@ public class BelegCommands : CommandsBase
         bool includeArchive = true
     )
     {
-        var settings = await getSettings();
-
-        SafeLog($"Lade Belege{(jahr > 0 ? $" für Jahr {jahr}" : "")}...");
-
-        // 1. Alle Vorgänge laden
-        var vorgaengeList = await getAllVorgaenge(jahr, includeArchive, settings);
-        if (vorgaengeList == null || !vorgaengeList.Any())
-        {
-            SafeLog("Keine Vorgänge gefunden.");
-            return;
-        }
-
-        SafeLog($"{vorgaengeList.Count} Vorgänge gefunden. Lade Details...");
-
-        // 2. Belege extrahieren
-        var belege = await extractBelege(vorgaengeList, belegart, settings);
-
-        SafeLog($"{belege.Count} Belege extrahiert.");
-
-        // 3. Output generieren
-        string output;
-        if (format.ToLower() == "csv")
-        {
-            output = GenerateCsv(belege, separator);
-        }
-        else
-        {
-            output = GenerateJson(belege);
-        }
-
-        // 4. Output schreiben
-        if (!string.IsNullOrEmpty(filename))
-        {
-            await File.WriteAllTextAsync(filename, output, Encoding.UTF8);
-            SafeLog($"Ergebnis gespeichert in: {filename}");
-        }
-        else
-        {
-            Console.WriteLine(output);
-        }
+        _authService = authService;
+        _logger = logger;
     }
 
-    private async Task<List<VorgangListItemDTO>> getAllVorgaenge(int jahr, bool includeArchive, IWebApiConfig settings)
+    public class Settings : GlobalSettings
+    {
+        [CommandOption("--jahr")]
+        public int Jahr { get; set; } = 0;
+
+        [CommandOption("--format")]
+        public string Format { get; set; } = "json";
+
+        [CommandOption("--separator")]
+        public string Separator { get; set; } = ";";
+
+        [CommandOption("--belegart")]
+        public string? Belegart { get; set; }
+
+        [CommandOption("--filename")]
+        public string? Filename { get; set; }
+
+        [CommandOption("--includeArchive")]
+        public bool IncludeArchive { get; set; } = true;
+    }
+
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {
-            var client = new VorgangListeWebRoutinen(settings);
-            var result = await client.LadeVorgangsListeAsync(jahr, "Alle", DateTime.MinValue, "", 
+            var authSettings = await _authService.GetSettingsAsync();
+
+            _logger.LogInformation($"Lade Belege{(settings.Jahr > 0 ? $" für Jahr {settings.Jahr}" : "")}...");
+
+            // 1. Alle Vorgänge laden
+            var vorgaengeList = await getAllVorgaenge(settings.Jahr, settings.IncludeArchive, authSettings);
+            if (vorgaengeList == null || !vorgaengeList.Any())
+            {
+                _logger.LogInformation("Keine Vorgänge gefunden.");
+                return 0;
+            }
+
+            _logger.LogInformation($"{vorgaengeList.Count} Vorgänge gefunden. Lade Details...");
+
+            // 2. Belege extrahieren
+            var belege = await extractBelege(vorgaengeList, settings.Belegart, authSettings);
+
+            _logger.LogInformation($"{belege.Count} Belege extrahiert.");
+
+            // 3. Output generieren
+            string output;
+            if (settings.Format.ToLower() == "csv")
+            {
+                output = GenerateCsv(belege, settings.Separator);
+            }
+            else
+            {
+                output = GenerateJson(belege);
+            }
+
+            // 4. Output schreiben
+            if (!string.IsNullOrEmpty(settings.Filename))
+            {
+                await File.WriteAllTextAsync(settings.Filename, output, Encoding.UTF8);
+                _logger.LogInformation($"Ergebnis gespeichert in: {settings.Filename}");
+            }
+            else
+            {
+                Console.WriteLine(output);
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            return 1;
+        }
+    }
+
+    private async Task<List<VorgangListItemDTO>> getAllVorgaenge(int jahr, bool includeArchive, IWebApiConfig authSettings)
+    {
+        try
+        {
+            var client = new VorgangListeWebRoutinen(authSettings);
+            var result = await client.LadeVorgangsListeAsync(jahr, "Alle", DateTime.MinValue, "",
                 includeArchive, true, "", true, true);
             return result?.ToList() ?? new List<VorgangListItemDTO>();
         }
         catch (Exception ex)
         {
-            SafeLog($"Fehler beim Laden der Vorgänge: {ex.Message}");
+            _logger.LogInformation($"Fehler beim Laden der Vorgänge: {ex.Message}");
             return new List<VorgangListItemDTO>();
         }
     }
 
-    private async Task<List<BelegListDTO>> extractBelege(List<VorgangListItemDTO> vorgaengeList, string? belegartFilter, IWebApiConfig settings)
+    private async Task<List<BelegListDTO>> extractBelege(List<VorgangListItemDTO> vorgaengeList, string? belegartFilter, IWebApiConfig authSettings)
     {
         var belege = new List<BelegListDTO>();
         var total = vorgaengeList.Count;
@@ -86,14 +126,14 @@ public class BelegCommands : CommandsBase
             try
             {
                 // Vorgang Details laden
-                var client = new VorgangWebRoutinen(settings);
+                var client = new VorgangWebRoutinen(authSettings);
                 var vorgang = await client.LadeVorgangAsync(vorgangSummary.VorgangGuid, true);
                 if (vorgang?.Belege == null) continue;
 
                 foreach (var beleg in vorgang.Belege)
                 {
                     // Belegart filtern
-                    if (!string.IsNullOrEmpty(belegartFilter) && 
+                    if (!string.IsNullOrEmpty(belegartFilter) &&
                         !beleg.BelegArt.Equals(belegartFilter, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
@@ -105,12 +145,12 @@ public class BelegCommands : CommandsBase
 
                 if (current % 10 == 0 || current == total)
                 {
-                    SafeLog($"  [{current}/{total}] Vorgänge verarbeitet...");
+                    _logger.LogInformation($"  [{current}/{total}] Vorgänge verarbeitet...");
                 }
             }
             catch (Exception ex)
             {
-                SafeLog($"  Fehler bei Vorgang {vorgangSummary.VorgangsNummer}: {ex.Message}");
+                _logger.LogInformation($"  Fehler bei Vorgang {vorgangSummary.VorgangsNummer}: {ex.Message}");
             }
         }
 
@@ -140,7 +180,7 @@ public class BelegCommands : CommandsBase
             foreach (var saldo in beleg.Salden)
             {
                 var betrag = saldo.Betrag;
-                
+
                 switch (saldo.Name)
                 {
                     case "Warenwert":
@@ -180,7 +220,7 @@ public class BelegCommands : CommandsBase
     private string GenerateCsv(List<BelegListDTO> belege, string separator)
     {
         var sb = new StringBuilder();
-        
+
         // Header
         var headers = new[]
         {
