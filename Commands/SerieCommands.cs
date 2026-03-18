@@ -2,20 +2,23 @@ using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class SerieListCommand : AsyncCommand<GlobalSettings>
 {
-    public async Task GetSerienList(CommonParameters commonParams)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public SerieListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task GetSerie(
-        CommonParameters commonParams,
-        Guid serie)
+    public override async Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
     {
         try
         {
@@ -132,21 +135,4 @@ public class SerieSampleCommand : AsyncCommand<GlobalSettings>
             return 1;
         }
     }
-
-    public async Task PutSerie(
-        string file)
-    {
-        var settings = await getSettings();
-        SerienWebRoutinen client = new(settings);
-        var serie = JsonSerializer.Deserialize<SerieDTO>(await File.ReadAllTextAsync(file));
-        //Console.WriteLine(JsonSerializer.Serialize(await client.SaveSerieAsync(serie)));
-        await client.SaveSerieAsync(serie);
-    }
-
-    public async Task CreateSampleSerie(CommonParameters commonParams) => await dumpOutput(commonParams, new SerieDTO()
-    {
-        SerieGuid = Guid.NewGuid(),
-        Name = "Beispielserie",
-        ChangedDate = DateTime.UtcNow
-    });
 }

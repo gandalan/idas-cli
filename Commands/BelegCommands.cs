@@ -5,19 +5,18 @@ using System.Text.Json;
 using Gandalan.IDAS.Client.Contracts.Contracts;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class BelegListCommand : AsyncCommand<BelegListCommand.Settings>
 {
-    public async Task List(
-        int jahr = 0,
-        string format = "json",
-        string separator = ";",
-        string? belegart = null,
-        string? filename = null,
-        bool includeArchive = true
-    )
+    private readonly IIdasAuthService _authService;
+    private readonly ILogger<BelegListCommand> _logger;
+
+    public BelegListCommand(IIdasAuthService authService, ILogger<BelegListCommand> logger)
     {
         _authService = authService;
         _logger = logger;
@@ -29,7 +28,7 @@ public class BelegListCommand : AsyncCommand<BelegListCommand.Settings>
         public int Jahr { get; set; } = 0;
 
         [CommandOption("--format")]
-        public string Format { get; set; } = "json";
+        public new string Format { get; set; } = "json";
 
         [CommandOption("--separator")]
         public string Separator { get; set; } = ";";
@@ -38,7 +37,7 @@ public class BelegListCommand : AsyncCommand<BelegListCommand.Settings>
         public string? Belegart { get; set; }
 
         [CommandOption("--filename")]
-        public string? Filename { get; set; }
+        public new string? Filename { get; set; }
 
         [CommandOption("--includeArchive")]
         public bool IncludeArchive { get; set; } = true;

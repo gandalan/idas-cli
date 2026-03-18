@@ -1,13 +1,16 @@
-using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
-using Gandalan.IDAS.WebApi.DTO;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class WarengruppeListCommand : AsyncCommand<GlobalSettings>
 {
-    public async Task GetList(CommonParameters commonParams)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public WarengruppeListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;

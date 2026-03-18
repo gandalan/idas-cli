@@ -2,30 +2,29 @@ using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class WertelisteListCommand : AsyncCommand<WertelisteListCommand.Settings>
 {
-    public async Task GetList(
-        CommonParameters commonParams,
-        bool includeAuto)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public WertelisteListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task GetWerteliste(
-        Guid guid,
-        CommonParameters commonParams,
-        bool includeAuto)
+    public class Settings : GlobalSettings
     {
         [CommandOption("--includeAuto")]
         public bool IncludeAuto { get; set; } = false;
     }
 
-    public async Task PutWerteliste(
-        string file)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

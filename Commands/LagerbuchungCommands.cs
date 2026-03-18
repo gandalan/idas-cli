@@ -2,23 +2,23 @@ using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class LagerbuchungListCommand : AsyncCommand<LagerbuchungListCommand.Settings>
 {
-    public async Task GetList(
-        CommonParameters commonParams,
-        DateTime from,
-        DateTime till)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public LagerbuchungListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task PutBuchung(
-        CommonParameters commonParams,
-        string file)
+    public class Settings : GlobalSettings
     {
         [CommandArgument(0, "<FROM>")]
         public DateTime From { get; set; }
@@ -27,7 +27,7 @@ public class LagerbuchungListCommand : AsyncCommand<LagerbuchungListCommand.Sett
         public DateTime Till { get; set; }
     }
 
-    public async Task CreateSample(CommonParameters commonParams)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

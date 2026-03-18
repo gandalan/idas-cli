@@ -1,18 +1,22 @@
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
+using IdasCli.Services;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class GSQLListCommand : AsyncCommand<GlobalSettings>
 {
-    public async Task GetList(CommonParameters commonParams)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public GSQLListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task GetBeleg(
-        CommonParameters commonParams,
-        Guid beleg)
+    public override async Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
     {
         try
         {
@@ -40,8 +44,7 @@ public class GSQLGetCommand : AsyncCommand<GSQLGetCommand.Settings>
         _outputService = outputService;
     }
 
-    public async Task Reset(
-        DateTime since)
+    public class Settings : GlobalSettings
     {
         [CommandArgument(0, "<BELEGGUID>")]
         public string BelegGuid { get; set; } = string.Empty;

@@ -2,20 +2,23 @@ using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class KontaktListCommand : AsyncCommand<GlobalSettings>
 {
-    public async Task GetList(CommonParameters commonParams)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public KontaktListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task GetKontakt(
-        CommonParameters commonParams,
-        Guid kontakt)
+    public override async Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
     {
         try
         {
@@ -133,23 +136,4 @@ public class KontaktSampleCommand : AsyncCommand<GlobalSettings>
             return 1;
         }
     }
-
-    public async Task PutKontakt(
-        CommonParameters commonParams,
-        string file)
-    {
-        var settings = await getSettings();
-        KontaktWebRoutinen client = new(settings);
-        var kontakt = JsonSerializer.Deserialize<KontaktDTO>(await File.ReadAllTextAsync(file));
-        Console.WriteLine(JsonSerializer.Serialize(await client.SaveKontaktAsync(kontakt)));
-    }
-
-    public async Task CreateSample(CommonParameters commonParams) => await dumpOutput(commonParams, new KontaktDTO()
-    {
-        KontaktGuid = Guid.NewGuid(),
-        Firmenname = "Musterfirma",
-        ChangedDate = DateTime.UtcNow,
-        Personen = [ new() { PersonGuid = Guid.NewGuid(), Vorname = "Max", Nachname = "Mustermann" } ]
-    });
-
 }

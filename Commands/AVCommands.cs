@@ -1,22 +1,23 @@
 using System.Text.Json;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
 
 public class AVListCommand : AsyncCommand<AVListCommand.Settings>
 {
-    public async Task GetList(
-        CommonParameters commonParams,
-        DateTime? since)
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public AVListCommand(IIdasAuthService authService, IOutputService outputService)
     {
         _authService = authService;
         _outputService = outputService;
     }
 
-    public async Task GetPos(
-        CommonParameters commonParams,
-        string? pos)
+    public class Settings : GlobalSettings
     {
         [CommandOption("--since")]
         public DateTime? Since { get; set; }
