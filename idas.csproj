@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefaultItemExcludes>$(DefaultItemExcludes);idas-client-libs\**\*</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);idas-client-libs\**\*;Sidecars\Sample\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

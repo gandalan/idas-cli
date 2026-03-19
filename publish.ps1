@@ -129,7 +129,7 @@ foreach ($Platform in $Platforms) {
         # Copy artifacts to dist folder (Linux)
         Write-Host "Copying Linux artifacts to dist/..."
         $LinuxBinary = Join-Path $PublishDir "idas"
-        $LinuxDest = Join-Path $DistDir "idas-linux-x64"
+        $LinuxDest = Join-Path $DistDir "idas"
         Copy-Item -Path $LinuxBinary -Destination $LinuxDest -Force
     }
 }

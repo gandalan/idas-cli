@@ -8,8 +8,12 @@ public static class SpectreCommandAppFactory
 {
     public static CommandApp CreateApp(IServiceCollection services)
     {
+        // Create the registrar first to configure DI
         using var registrar = new DependencyInjectionRegistrar(services);
         var app = new CommandApp(registrar);
+        
+        // Register the app instance itself so commands can resolve it
+        services.AddSingleton<ICommandApp>(app);
         
         app.Configure(config =>
         {
@@ -137,6 +141,12 @@ public static class SpectreCommandAppFactory
             config.AddBranch<GlobalSettings>("beleg", beleg =>
             {
                 beleg.AddCommand<BelegListCommand>("list");
+            });
+
+            // Sidecar management commands
+            config.AddBranch<GlobalSettings>("sidecar", sidecar =>
+            {
+                sidecar.AddCommand<SidecarListCommand>("list");
             });
 
             config.AddCommand<McpServerCommand>("mcp");

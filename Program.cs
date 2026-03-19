@@ -1,5 +1,6 @@
 using IdasCli;
 using IdasCli.Commands;
+using IdasCli.Sidecars;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,70 +8,48 @@ using NReco.Logging.File;
 
 public class Program
 {
+    private static readonly string[] BuiltInCommands = new[]
+    {
+        "benutzer", "vorgang", "artikel", "av", "kontakt", "serie", "rollen",
+        "variante", "uidefinition", "konfigsatz", "werteliste", "lagerbestand",
+        "lagerbuchung", "gsql", "berechtigung", "warengruppe", "beleg", "mcp",
+        "sidecar"
+    };
+
     public static async Task<int> Main(string[] args)
     {
-        // Parse output parameters early to configure output services
-        var commonParameters = ParseCommonParameters(args);
-        
-        // Create service collection first
-        var services = new ServiceCollection();
-        
-        // Add required framework services
-        services.AddLogging(logging =>
+        var exeDir = AppContext.BaseDirectory;
+        var workDir = Directory.GetCurrentDirectory();
+
+        // Resolve configuration using FirstRunManager
+        var configManager = new FirstRunManager(args);
+        if (!configManager.TryResolveConfiguration(out var appGuid, out var env))
         {
-            // Ensure logs directory exists
-            var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
-            Directory.CreateDirectory(logDirectory);
-
-            logging.ClearProviders();
-            logging.SetMinimumLevel(LogLevel.Information);
-            logging.AddFile(Path.Combine(logDirectory, "idas-cli.log"), append: true);
-        });
-        
-        // Register all IDAS CLI command classes and services
-        services.AddIdasCommands(commonParameters);
-        
-        // Build the service provider
-        var serviceProvider = services.BuildServiceProvider();
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-        try
-        {
-            logger.LogInformation("IDAS CLI starting...");
-
-            // Resolve configuration using FirstRunManager
-            var configManager = new FirstRunManager(args);
-            if (!configManager.TryResolveConfiguration(out var appGuid, out var env))
-            {
-                logger.LogError("Configuration resolution failed");
-                return 1;
-            }
-
-            logger.LogInformation("Configuration resolved: AppGuid={AppGuid}, Environment={Environment}", appGuid, env);
-
-            // Set environment variables for this process so commands can read them
-            Environment.SetEnvironmentVariable("IDAS_APPGUID", appGuid);
-            Environment.SetEnvironmentVariable("IDAS_ENV", env);
-
-            // If called without arguments and no token file exists, auto-start login
-            string[] effectiveArgs = args;
-            if (args.Length == 0 && !File.Exists("token"))
-            {
-                logger.LogInformation("No token found, auto-starting SSO login");
-                Console.WriteLine("Starting SSO-Login...");
-                Console.WriteLine();
-                effectiveArgs = new[] { "benutzer", "login" };
-            }
-
-            // Build and run the Spectre.Console.Cli app with DI
-            var app = SpectreCommandAppFactory.CreateApp(services);
-            return await app.RunAsync(effectiveArgs);
+            return 1;
         }
-        catch (Exception ex)
+
+        // Set environment variables for this process so commands can read them
+        Environment.SetEnvironmentVariable("IDAS_APPGUID", appGuid);
+        Environment.SetEnvironmentVariable("IDAS_ENV", env);
+
+        // If called without arguments and no token file exists, auto-start login
+        string[] effectiveArgs = args;
+        if (args.Length == 0 && !File.Exists("token"))
         {
-            logger.LogError(ex, "Unhandled exception occurred");
-            throw;
+            Console.WriteLine("Starting SSO-Login...");
+            Console.WriteLine();
+            effectiveArgs = new[] { "benutzer", "login" };
         }
+
+        // Check if first argument is a sidecar command
+        var sidecar = TryResolveSidecar(effectiveArgs);
+        if (sidecar != null)
+        {
+            return await SidecarExecutor.ExecuteAsync(sidecar, effectiveArgs.Skip(1).ToArray());
+        }
+
+        // Not a sidecar - run the Spectre.Console.Cli app
+        return await RunSpectreAppAsync(effectiveArgs);
     }
 
     /// <summary>
@@ -140,5 +119,103 @@ public class Program
         }
         
         return new OutputParameters(format, filename);
+    }
+
+    private static SidecarDescriptor? TryResolveSidecar(string[] commandLineArgs)
+    {
+        if (commandLineArgs.Length == 0)
+        {
+            return null;
+        }
+
+        var firstCommand = GetFirstCommandToken(commandLineArgs);
+        if (firstCommand == null)
+        {
+            return null;
+        }
+
+        if (BuiltInCommands.Contains(firstCommand, StringComparer.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return SidecarRegistry.Find(firstCommand, BuiltInCommands);
+    }
+
+    private static string? GetFirstCommandToken(string[] commandLineArgs)
+    {
+        for (var index = 0; index < commandLineArgs.Length; index++)
+        {
+            var current = commandLineArgs[index];
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                continue;
+            }
+
+            if (current.Equals("--appguid", StringComparison.OrdinalIgnoreCase)
+                || current.Equals("--env", StringComparison.OrdinalIgnoreCase))
+            {
+                index++;
+                continue;
+            }
+
+            if (current.StartsWith("--appguid=", StringComparison.OrdinalIgnoreCase)
+                || current.StartsWith("--env=", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (current.StartsWith("-", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return current;
+        }
+
+        return null;
+    }
+
+    private static async Task<int> RunSpectreAppAsync(string[] args)
+    {
+        // Parse output parameters early to configure output services
+        var commonParameters = ParseCommonParameters(args);
+        
+        // Create service collection first
+        var services = new ServiceCollection();
+        
+        // Add required framework services
+        services.AddLogging(logging =>
+        {
+            // Ensure logs directory exists
+            var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+            Directory.CreateDirectory(logDirectory);
+
+            logging.ClearProviders();
+            logging.SetMinimumLevel(LogLevel.Information);
+            logging.AddFile(Path.Combine(logDirectory, "idas-cli.log"), append: true);
+        });
+        
+        // Register all IDAS CLI command classes and services
+        services.AddIdasCommands(commonParameters);
+        
+        // Build the service provider
+        var serviceProvider = services.BuildServiceProvider();
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        try
+        {
+            logger.LogInformation("IDAS CLI starting...");
+            logger.LogInformation("Configuration resolved");
+
+            // Build and run the Spectre.Console.Cli app with DI
+            var app = SpectreCommandAppFactory.CreateApp(services);
+            return await app.RunAsync(args);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unhandled exception occurred");
+            throw;
+        }
     }
 }

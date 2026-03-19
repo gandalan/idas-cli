@@ -74,7 +74,7 @@ for PLATFORM in "${PLATFORMS[@]}"; do
         
         # Copy artifacts to dist folder (Linux)
         echo "Copying Linux artifacts to dist/..."
-        cp "${PUBLISH_DIR}/idas" "${DIST_DIR}/idas-linux-x64"
+        cp "${PUBLISH_DIR}/idas" "${DIST_DIR}/idas"
     fi
 done
 
