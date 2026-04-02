@@ -94,7 +94,7 @@ public class GSQLResetCommand : AsyncCommand<GSQLResetCommand.Settings>
         {
             var authSettings = await _authService.GetSettingsAsync();
             IBOS1ImportRoutinen client = new(authSettings);
-            await client.ResetBestellungenAsync(settings.Since);
+            await client.ResetBestellungenAsync(settings.Since.ToUniversalTime());
             return 0;
         }
         catch (Exception ex)

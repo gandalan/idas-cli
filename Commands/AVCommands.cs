@@ -29,7 +29,8 @@ public class AVListCommand : AsyncCommand<AVListCommand.Settings>
         {
             var authSettings = await _authService.GetSettingsAsync();
             AVWebRoutinen client = new(authSettings);
-            var data = await client.GetAllBelegPositionenAVAsync(settings.Since ?? DateTime.Now.AddMonths(-1));
+            var date = settings.Since ?? DateTime.Now.AddMonths(-1);
+            var data = await client.GetAllBelegPositionenAVAsync(date.ToUniversalTime());
             var reduced = data.Select(avpo => new { avpo.Pcode, avpo.BelegPositionAVGuid, avpo.BelegGuid, avpo.BelegPositionGuid });
             await _outputService.DumpOutputAsync(reduced);
             return 0;

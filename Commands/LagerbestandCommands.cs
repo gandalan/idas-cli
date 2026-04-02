@@ -30,7 +30,8 @@ public class LagerbestandListCommand : AsyncCommand<LagerbestandListCommand.Sett
         {
             var authSettings = await _authService.GetSettingsAsync();
             LagerbestandWebRoutinen client = new(authSettings);
-            await _outputService.DumpOutputAsync(await client.GetAllAsync(settings.Since));
+            var date = settings.Since ?? DateTime.Now.AddMonths(-1);
+            await _outputService.DumpOutputAsync(await client.GetAllAsync(date.ToUniversalTime()));
             return 0;
         }
         catch (Exception ex)
