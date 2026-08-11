@@ -13,10 +13,12 @@ namespace IdasCli.Commands;
 
 public class BenutzerLoginCommand : AsyncCommand<BenutzerLoginCommand.Settings>
 {
+    private readonly IIdasAuthService _authService;
     private readonly ILogger<BenutzerLoginCommand> _logger;
 
-    public BenutzerLoginCommand(ILogger<BenutzerLoginCommand> logger)
+    public BenutzerLoginCommand(IIdasAuthService authService, ILogger<BenutzerLoginCommand> logger)
     {
+        _authService = authService;
         _logger = logger;
     }
 
@@ -30,29 +32,6 @@ public class BenutzerLoginCommand : AsyncCommand<BenutzerLoginCommand.Settings>
     {
         try
         {
-            var env = Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
-            var appGuid = Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
-
-            if (appGuid == Guid.Empty)
-            {
-                Console.WriteLine("Please provide appGuid via IDAS_APPGUID environment variable or --appguid flag.");
-                return 1;
-            }
-
-            // Initialize WebApiConfigurations
-            await WebApiConfigurations.InitializeAsync(appGuid);
-            var authSettings = WebApiConfigurations.ByName(env);
-            if (authSettings == null)
-            {
-                Console.WriteLine($"Environment '{env}' not found.");
-                return 1;
-            }
-
-            // Use the library's SSO login service
-            var ssoService = new Gandalan.IDAS.WebApi.Client.SSO.SsoLoginService(authSettings, settings.Timeout);
-
-            Console.WriteLine("Starting SSO login flow...");
-
             bool OpenBrowser(string url)
             {
                 try
@@ -69,45 +48,27 @@ public class BenutzerLoginCommand : AsyncCommand<BenutzerLoginCommand.Settings>
                 }
             }
 
-            var result = await ssoService.LoginAsync(appGuid, msg => _logger.LogInformation(msg), OpenBrowser);
+            Console.WriteLine("Starting SSO login flow...");
 
-            if (result.Success)
+            var result = await _authService.LoginWithSsoAsync(
+                timeout: settings.Timeout,
+                log: msg => _logger.LogInformation(msg),
+                openBrowser: OpenBrowser);
+
+            if (result.IsSuccessful)
             {
-                authSettings.AuthToken = result.AuthToken;
-                WebApiConfigurations.Save(authSettings);
-
-                // Save token to file for CLI persistence
-                await SaveTokenToFileAsync(result.AuthToken);
-
                 Console.WriteLine($"SSO Login successful: User={result.UserName} Mandant={result.MandantName}");
                 return 0;
             }
-            else
-            {
-                Console.WriteLine($"SSO Login failed: {result.ErrorMessage}");
-                return 1;
-            }
+
+            Console.WriteLine($"SSO Login failed: {result.ErrorMessage}");
+            return 1;
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
             return 1;
         }
-    }
-
-    private async Task SaveTokenToFileAsync(UserAuthTokenDTO? authToken)
-    {
-        if (authToken == null)
-        {
-            return;
-        }
-
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-
-        await File.WriteAllTextAsync("token", JsonSerializer.Serialize(authToken, options));
     }
 }
 

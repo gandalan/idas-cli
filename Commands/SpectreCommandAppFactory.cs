@@ -150,6 +150,7 @@ public static class SpectreCommandAppFactory
                 sidecar.AddCommand<SidecarListCommand>("list");
             });
 
+            config.AddCommand<SetupCommand>("setup");
             config.AddCommand<McpServerCommand>("mcp");
         });
         

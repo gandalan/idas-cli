@@ -13,6 +13,11 @@ public interface IIdasAuthService
     Task<IWebApiConfig> GetSettingsAsync(Guid? appGuid = null, string? env = null);
     
     /// <summary>
+    /// Logs in interactively via the SSO browser flow and persists the resulting token
+    /// </summary>
+    Task<AuthResult> LoginWithSsoAsync(Guid? appGuid = null, string? env = null, int timeout = 60, Action<string>? log = null, Func<string, bool>? openBrowser = null);
+
+    /// <summary>
     /// Logs in non-interactively using an existing classic IDAS AuthToken and persists it
     /// </summary>
     Task<AuthResult> LoginWithAuthTokenAsync(Guid authToken, Guid? appGuid = null, string? env = null);

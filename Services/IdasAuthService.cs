@@ -2,8 +2,10 @@ using Gandalan.IDAS.Client.Contracts.Contracts;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client;
 using Gandalan.IDAS.WebApi.Client.Settings;
+using Gandalan.IDAS.WebApi.Client.SSO;
 using Gandalan.IDAS.WebApi.DTO;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace IdasCli.Services;
@@ -95,6 +97,57 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
         logger.LogInformation("Login via AuthToken successful: User={UserName} Mandant={MandantName} AppToken={AppToken}, Environment={Environment}",
             settings.UserName, full.Mandant?.Name, full.AppToken, settings.FriendlyName);
         return AuthResult.Succeeded(settings.UserName, full.Mandant?.Name, full.AppToken);
+    }
+
+    public async Task<AuthResult> LoginWithSsoAsync(Guid? appGuid = null, string? env = null, int timeout = 60, Action<string>? log = null, Func<string, bool>? openBrowser = null)
+    {
+        env ??= Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        appGuid ??= Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
+
+        if (appGuid == Guid.Empty)
+        {
+            return AuthResult.Failed("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
+        }
+
+        await InitializeWebApiConfigurationsAsync(appGuid.Value);
+
+        var settings = WebApiConfigurations.ByName(env);
+        if (settings == null)
+        {
+            return AuthResult.Failed($"Environment '{env}' not found. Available environments: {string.Join(", ", WebApiConfigurations.GetAll().Select(s => s.FriendlyName))}");
+        }
+
+        log ??= _ => { };
+        openBrowser ??= DefaultOpenBrowser;
+
+        var ssoService = new SsoLoginService(settings, timeout);
+        var result = await ssoService.LoginAsync(appGuid.Value, log, openBrowser);
+
+        if (!result.Success)
+        {
+            return AuthResult.Failed(result.ErrorMessage ?? "SSO login failed");
+        }
+
+        settings.AuthToken = result.AuthToken;
+        WebApiConfigurations.Save(settings);
+        await SaveTokenAsync(result.AuthToken);
+
+        logger.LogInformation("SSO login successful: User={UserName} Mandant={MandantName}, Environment={Environment}",
+            result.UserName, result.MandantName, settings.FriendlyName);
+        return AuthResult.Succeeded(result.UserName, result.MandantName);
+    }
+
+    private static bool DefaultOpenBrowser(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task LogoutAsync(string? env = null, Guid? appGuid = null)

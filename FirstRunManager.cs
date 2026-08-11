@@ -210,4 +210,17 @@ public class FirstRunManager
         var content = $"IDAS_APPGUID={appGuid}\nIDAS_ENV={env}\n";
         File.WriteAllText(filePath, content);
     }
+
+    /// <summary>
+    /// Persists AppGuid and Environment to a .env file (workdir preferred, falling back to the exe directory)
+    /// and returns the path that was written. Used by the interactive `setup` command.
+    /// </summary>
+    public static string PersistConfiguration(string appGuid, string env)
+    {
+        var localEnv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+        var exeEnv = Path.Combine(AppContext.BaseDirectory, ".env");
+        var target = File.Exists(localEnv) ? localEnv : (File.Exists(exeEnv) ? exeEnv : localEnv);
+        SaveEnvFile(target, appGuid, env);
+        return target;
+    }
 }

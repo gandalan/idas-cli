@@ -13,7 +13,7 @@ public class Program
         "benutzer", "vorgang", "artikel", "av", "kontakt", "serie", "rollen",
         "variante", "uidefinition", "konfigsatz", "werteliste", "lagerbestand",
         "lagerbuchung", "gsql", "berechtigung", "warengruppe", "beleg", "mcp",
-        "sidecar"
+        "sidecar", "setup"
     };
 
     public static async Task<int> Main(string[] args)
@@ -21,16 +21,22 @@ public class Program
         var exeDir = AppContext.BaseDirectory;
         var workDir = Directory.GetCurrentDirectory();
 
-        // Resolve configuration using FirstRunManager
-        var configManager = new FirstRunManager(args);
-        if (!configManager.TryResolveConfiguration(out var appGuid, out var env))
+        // The `setup` command configures AppGuid/Environment itself, so skip the first-run
+        // resolution gate (which would otherwise prompt/fail before setup can run).
+        var isSetup = string.Equals(GetFirstCommandToken(args), "setup", StringComparison.OrdinalIgnoreCase);
+        if (!isSetup)
         {
-            return 1;
-        }
+            // Resolve configuration using FirstRunManager
+            var configManager = new FirstRunManager(args);
+            if (!configManager.TryResolveConfiguration(out var appGuid, out var env))
+            {
+                return 1;
+            }
 
-        // Set environment variables for this process so commands can read them
-        Environment.SetEnvironmentVariable("IDAS_APPGUID", appGuid);
-        Environment.SetEnvironmentVariable("IDAS_ENV", env);
+            // Set environment variables for this process so commands can read them
+            Environment.SetEnvironmentVariable("IDAS_APPGUID", appGuid);
+            Environment.SetEnvironmentVariable("IDAS_ENV", env);
+        }
 
         // If called without arguments and no token file exists, auto-start login
         string[] effectiveArgs = args;
