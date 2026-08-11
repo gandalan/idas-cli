@@ -1,4 +1,5 @@
 using System.Text.Json;
+using IdasCli.Mcp;
 using IdasCli.Services;
 using Gandalan.IDAS.WebApi.Client.BusinessRoutinen;
 using Gandalan.IDAS.WebApi.DTO;
@@ -6,6 +7,140 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace IdasCli.Commands;
+
+public class VorgangSearchCommand : AsyncCommand<VorgangSearchCommand.Settings>
+{
+    private readonly IIdasAuthService _authService;
+    private readonly IOutputService _outputService;
+
+    public VorgangSearchCommand(IIdasAuthService authService, IOutputService outputService)
+    {
+        _authService = authService;
+        _outputService = outputService;
+    }
+
+    public class Settings : GlobalSettings
+    {
+        [CommandArgument(0, "<TERM>")]
+        public string Term { get; set; } = string.Empty;
+
+        [CommandOption("--jahr")]
+        public int? Jahr { get; set; }
+    }
+
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var term = settings.Term?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                ConsoleEx.Status.MarkupLine("[red]Error: search term required[/]");
+                return 1;
+            }
+
+            var authSettings = await _authService.GetSettingsAsync();
+            var listClient = new VorgangListeWebRoutinen(authSettings);
+            var year = settings.Jahr ?? 0;
+            var list = await listClient.LadeVorgangsListeAsync(year, "Alle", DateTime.MinValue, "",
+                includeArchive: true, includeOthersData: true, search: "",
+                includeASP: false, includeAdditionalProperties: false);
+
+            var matches = (list ?? Array.Empty<VorgangListItemDTO>())
+                .Where(v => Matches(v, term))
+                .OrderByDescending(v => v.VorgangsNummer)
+                .ToList();
+
+            // A full VorgangsNummer typed as term should pin down a single hit.
+            var exactNummer = matches.Where(v => v.VorgangsNummer.ToString() == term).ToList();
+            if (exactNummer.Count == 1)
+            {
+                matches = exactNummer;
+            }
+
+            // MCP mode: always return the list of matching Vorgänge (GUID + identifying fields).
+            if (DynamicMcpToolContainer.IsMcpMode)
+            {
+                await _outputService.DumpOutputAsync(matches.Select(Project).ToList());
+                return 0;
+            }
+
+            if (matches.Count == 0)
+            {
+                ConsoleEx.Status.MarkupLine($"[yellow]No Vorgang matches '{Markup.Escape(term)}'.[/]");
+                return 0;
+            }
+
+            // Single match (or narrowed to one interactively): show the full Vorgang directly.
+            VorgangListItemDTO? selected;
+            if (matches.Count == 1)
+            {
+                selected = matches[0];
+            }
+            else if (IsInteractive())
+            {
+                selected = ConsoleEx.Status.Prompt(
+                    new SelectionPrompt<VorgangListItemDTO>()
+                        .Title($"[green]{matches.Count}[/] matches for '[green]{Markup.Escape(term)}[/]' - select a Vorgang:")
+                        .PageSize(20)
+                        .UseConverter(v => Markup.Escape(Label(v)))
+                        .AddChoices(matches));
+            }
+            else
+            {
+                // Non-interactive (e.g. piped): can't prompt, so emit the match list.
+                await _outputService.DumpOutputAsync(matches.Select(Project).ToList());
+                return 0;
+            }
+
+            var vorgangClient = new VorgangWebRoutinen(authSettings);
+            var vorgang = await vorgangClient.LadeVorgangAsync(selected!.VorgangGuid, true);
+            await _outputService.DumpOutputAsync(vorgang);
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            ConsoleEx.Status.MarkupLine($"[red]Error: {Markup.Escape(ex.Message)}[/]");
+            return 1;
+        }
+    }
+
+    private static bool Matches(VorgangListItemDTO v, string term)
+    {
+        var fields = new[]
+        {
+            v.VorgangsNummer.ToString(),
+            v.OriginalVorgangsNummer?.ToString(),
+            v.Kommission, v.Kommission2, v.VorgangsNotitz,
+            v.AktuelleBelegArt, v.AktuelleBelegNummer, v.AktuelleRechnungsNummer, v.AlleBelegNummern,
+            v.KundenNummer, v.Kundenname,
+            v.Status, v.TextStatus,
+            v.Besitzer, v.Besteller, v.Bearbeiter,
+            v.ExterneReferenznummer, v.ExternerFirmenname,
+            v.VorgangGuid.ToString()
+        };
+        return fields.Any(f => !string.IsNullOrEmpty(f) && f.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static object Project(VorgangListItemDTO v) => new
+    {
+        v.VorgangGuid,
+        v.VorgangsNummer,
+        v.Kundenname,
+        v.KundenNummer,
+        v.Kommission,
+        v.AktuelleBelegArt,
+        v.AktuelleBelegNummer,
+        v.Status,
+        v.IsArchiv
+    };
+
+    private static string Label(VorgangListItemDTO v)
+        => $"#{v.VorgangsNummer} · {v.ErstellDatum:yyyy-MM-dd} · {v.Kundenname} · {v.Kommission} [{v.AktuelleBelegArt} {v.AktuelleBelegNummer}] {v.Status}";
+
+    private static bool IsInteractive()
+        => !Console.IsInputRedirected && !Console.IsOutputRedirected;
+}
 
 public class VorgangListCommand : AsyncCommand<VorgangListCommand.Settings>
 {

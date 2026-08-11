@@ -21,6 +21,12 @@ public class DynamicMcpToolContainer
     private static readonly object _initLock = new();
 
     /// <summary>
+    /// True when the process is running as an MCP server. Commands can use this to
+    /// avoid interactive prompts and emit machine-readable output instead.
+    /// </summary>
+    public static bool IsMcpMode { get; private set; }
+
+    /// <summary>
     /// Initializes the tool container with discovered tools from the Spectre command tree.
     /// Must be called before the MCP server starts.
     /// </summary>
@@ -31,6 +37,8 @@ public class DynamicMcpToolContainer
         lock (_initLock)
         {
             if (_initialized) return;
+
+            IsMcpMode = true;
 
             // Discover all tools by reflecting on command types in the assembly
             var discoveredTools = DiscoverToolsFromAssembly();

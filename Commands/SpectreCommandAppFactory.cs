@@ -37,6 +37,7 @@ public static class SpectreCommandAppFactory
             config.AddBranch<GlobalSettings>("vorgang", vorgang =>
             {
                 vorgang.AddCommand<VorgangListCommand>("list");
+                vorgang.AddCommand<VorgangSearchCommand>("search");
                 vorgang.AddCommand<VorgangGetCommand>("get");
                 vorgang.AddCommand<VorgangPutCommand>("put");
                 vorgang.AddCommand<VorgangSampleCommand>("sample");

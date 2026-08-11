@@ -44,7 +44,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
             var env = settings.Env;
             if (string.IsNullOrWhiteSpace(env))
             {
-                env = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                env = ConsoleEx.Status.Prompt(new SelectionPrompt<string>()
                     .Title("Select [green]environment[/]:")
                     .AddChoices("prod", "stg", "dev"));
             }
@@ -53,7 +53,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
             var method = settings.Method?.Trim().ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(method))
             {
-                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                var choice = ConsoleEx.Status.Prompt(new SelectionPrompt<string>()
                     .Title("Select [green]login method[/]:")
                     .AddChoices("SSO (browser)", "Classic AuthToken"));
                 method = choice.StartsWith("SSO") ? "sso" : "token";
@@ -65,7 +65,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
             {
                 if (!Guid.TryParse(settings.AppGuid, out var parsedAppGuid))
                 {
-                    AnsiConsole.MarkupLine("[red]Invalid AppGuid provided via --appguid[/]");
+                    ConsoleEx.Status.MarkupLine("[red]Invalid AppGuid provided via --appguid[/]");
                     return 1;
                 }
                 appGuid = parsedAppGuid;
@@ -80,7 +80,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
                 var tokenInput = settings.Token;
                 if (string.IsNullOrWhiteSpace(tokenInput))
                 {
-                    tokenInput = AnsiConsole.Prompt(new TextPrompt<string>("Enter [green]AuthToken[/]:")
+                    tokenInput = ConsoleEx.Status.Prompt(new TextPrompt<string>("Enter [green]AuthToken[/]:")
                         .Secret()
                         .Validate(v => Guid.TryParse(v, out _)
                             ? ValidationResult.Success()
@@ -88,7 +88,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
                 }
                 if (!Guid.TryParse(tokenInput, out var authToken))
                 {
-                    AnsiConsole.MarkupLine("[red]Invalid AuthToken[/]");
+                    ConsoleEx.Status.MarkupLine("[red]Invalid AuthToken[/]");
                     return 1;
                 }
 
@@ -100,7 +100,7 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
                 // SSO needs an AppToken up front.
                 if (appGuid == null)
                 {
-                    var appGuidInput = AnsiConsole.Prompt(new TextPrompt<string>("Enter [green]AppToken (AppGuid)[/]:")
+                    var appGuidInput = ConsoleEx.Status.Prompt(new TextPrompt<string>("Enter [green]AppToken (AppGuid)[/]:")
                         .Validate(v => Guid.TryParse(v, out _)
                             ? ValidationResult.Success()
                             : ValidationResult.Error("[red]Not a valid GUID[/]")));
@@ -122,19 +122,19 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
                     }
                 }
 
-                AnsiConsole.MarkupLine("[grey]Starting SSO login flow...[/]");
+                ConsoleEx.Status.MarkupLine("[grey]Starting SSO login flow...[/]");
                 result = await _authService.LoginWithSsoAsync(appGuid, env, log: msg => _logger.LogInformation(msg), openBrowser: OpenBrowser);
                 resolvedAppToken = appGuid.Value;
             }
             else
             {
-                AnsiConsole.MarkupLine($"[red]Unknown login method '{method}'. Use 'sso' or 'token'.[/]");
+                ConsoleEx.Status.MarkupLine($"[red]Unknown login method '{method}'. Use 'sso' or 'token'.[/]");
                 return 1;
             }
 
             if (!result.IsSuccessful)
             {
-                AnsiConsole.MarkupLine($"[red]Login failed: {result.ErrorMessage}[/]");
+                ConsoleEx.Status.MarkupLine($"[red]Login failed: {result.ErrorMessage}[/]");
                 return 1;
             }
 
@@ -144,15 +144,15 @@ public class SetupCommand : AsyncCommand<SetupCommand.Settings>
                 var envFile = FirstRunManager.PersistConfiguration(resolvedAppToken.ToString(), env);
                 Environment.SetEnvironmentVariable("IDAS_APPGUID", resolvedAppToken.ToString());
                 Environment.SetEnvironmentVariable("IDAS_ENV", env);
-                AnsiConsole.MarkupLine($"[grey]Configuration saved to {envFile}[/]");
+                ConsoleEx.Status.MarkupLine($"[grey]Configuration saved to {envFile}[/]");
             }
 
-            AnsiConsole.MarkupLine($"[green]Setup complete[/] — logged in as [bold]{result.UserName}[/] (Mandant: {result.MandantName})");
+            ConsoleEx.Status.MarkupLine($"[green]Setup complete[/] — logged in as [bold]{result.UserName}[/] (Mandant: {result.MandantName})");
             return 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            ConsoleEx.Status.MarkupLine($"[red]Error: {ex.Message}[/]");
             return 1;
         }
     }
