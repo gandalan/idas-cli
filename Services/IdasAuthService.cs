@@ -20,12 +20,10 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
     public async Task<IWebApiConfig> GetSettingsAsync(Guid? appGuid = null, string? env = null)
     {
         env ??= Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        // AppToken is optional here: URLs are resolved by env, and the AppToken is carried in
+        // the stored token (see TryAuthenticateWithStoredTokenAsync). It is only required for
+        // the interactive SSO login, not for token-based sessions.
         appGuid ??= Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
-
-        if (appGuid == Guid.Empty)
-        {
-            throw new InvalidOperationException("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
-        }
 
         await InitializeWebApiConfigurationsAsync(appGuid.Value);
 
@@ -50,12 +48,9 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
     public async Task<AuthResult> LoginWithAuthTokenAsync(Guid authToken, Guid? appGuid = null, string? env = null)
     {
         env ??= Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        // AppToken is optional: the environment URLs are resolved by env, and the AppToken
+        // (plus Mandant) is contained in the classic token and returned by the backend.
         appGuid ??= Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
-
-        if (appGuid == Guid.Empty)
-        {
-            return AuthResult.Failed("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
-        }
 
         if (authToken == Guid.Empty)
         {
@@ -70,23 +65,36 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
             return AuthResult.Failed($"Environment '{env}' not found. Available environments: {string.Join(", ", WebApiConfigurations.GetAll().Select(s => s.FriendlyName))}");
         }
 
-        settings.AppToken = appGuid.Value;
         settings.AuthToken = new UserAuthTokenDTO { Token = authToken };
 
-        // Validate the classic AuthToken and enrich it (Mandant, MandantGuid, Expires, RefreshToken).
-        var client = new WebRoutinenBase(settings);
-        if (!await client.LoginAsync())
+        // Validate and enrich the classic AuthToken directly against the backend.
+        // We call /api/Login/Update explicitly instead of LoginAsync()/RefreshTokenAsync():
+        // for a bare token GUID (Expires unset) LoginAsync makes no backend call at all, and
+        // RefreshTokenAsync swallows the exception - a direct PutAsync surfaces the real error.
+        UserAuthTokenDTO? full;
+        try
         {
-            return AuthResult.Failed($"AuthToken validation failed: {client.Status}");
+            var client = new WebRoutinenBase(settings);
+            full = await client.PutAsync<UserAuthTokenDTO>("/api/Login/Update", new UserAuthTokenDTO { Token = authToken }, null, skipAuth: true);
+        }
+        catch (Exception ex)
+        {
+            return AuthResult.Failed($"AuthToken validation failed: {ex.Message}");
         }
 
-        settings.AuthToken = client.AuthToken;
-        WebApiConfigurations.Save(settings);
-        await SaveTokenAsync(client.AuthToken);
+        if (full == null || full.Token == Guid.Empty)
+        {
+            return AuthResult.Failed("AuthToken validation failed: backend returned no valid token");
+        }
 
-        logger.LogInformation("Login via AuthToken successful: User={UserName} Mandant={MandantName}, Environment={Environment}",
-            settings.UserName, client.AuthToken?.Mandant?.Name, settings.FriendlyName);
-        return AuthResult.Succeeded();
+        settings.AuthToken = full;
+        settings.AppToken = full.AppToken;
+        WebApiConfigurations.Save(settings);
+        await SaveTokenAsync(full);
+
+        logger.LogInformation("Login via AuthToken successful: User={UserName} Mandant={MandantName} AppToken={AppToken}, Environment={Environment}",
+            settings.UserName, full.Mandant?.Name, full.AppToken, settings.FriendlyName);
+        return AuthResult.Succeeded(settings.UserName, full.Mandant?.Name, full.AppToken);
     }
 
     public async Task LogoutAsync(string? env = null, Guid? appGuid = null)
@@ -160,7 +168,8 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
             }
 
             settings.AuthToken = storedToken;
-            settings.AppToken = appGuid;
+            // Derive the AppToken from the stored token when none was provided explicitly.
+            settings.AppToken = appGuid != Guid.Empty ? appGuid : storedToken.AppToken;
 
             var client = new WebRoutinenBase(settings);
             var loginSuccess = await client.LoginAsync();

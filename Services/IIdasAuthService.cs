@@ -35,8 +35,12 @@ public class AuthResult
 {
     public bool IsSuccessful { get; init; }
     public string? ErrorMessage { get; init; }
+    public string? UserName { get; init; }
+    public string? MandantName { get; init; }
+    public Guid AppToken { get; init; }
 
-    public static AuthResult Succeeded() => new() { IsSuccessful = true };
+    public static AuthResult Succeeded(string? userName = null, string? mandantName = null, Guid appToken = default)
+        => new() { IsSuccessful = true, UserName = userName, MandantName = mandantName, AppToken = appToken };
     public static AuthResult Failed(string message) => new() { IsSuccessful = false, ErrorMessage = message };
 }
 
