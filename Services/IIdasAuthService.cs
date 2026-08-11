@@ -13,6 +13,11 @@ public interface IIdasAuthService
     Task<IWebApiConfig> GetSettingsAsync(Guid? appGuid = null, string? env = null);
     
     /// <summary>
+    /// Logs in non-interactively using an existing classic IDAS AuthToken and persists it
+    /// </summary>
+    Task<AuthResult> LoginWithAuthTokenAsync(Guid authToken, Guid? appGuid = null, string? env = null);
+
+    /// <summary>
     /// Logs out the current user and clears the token
     /// </summary>
     Task LogoutAsync(string? env = null, Guid? appGuid = null);

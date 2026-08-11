@@ -23,6 +23,7 @@ public static class SpectreCommandAppFactory
             config.AddBranch<GlobalSettings>("benutzer", benutzer =>
             {
                 benutzer.AddCommand<BenutzerLoginCommand>("login");
+                benutzer.AddCommand<BenutzerLoginTokenCommand>("login-token");
                 benutzer.AddCommand<BenutzerLogoutCommand>("logout");
                 benutzer.AddCommand<BenutzerListCommand>("list");
                 benutzer.AddCommand<BenutzerGetCommand>("get");

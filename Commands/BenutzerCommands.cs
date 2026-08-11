@@ -111,6 +111,67 @@ public class BenutzerLoginCommand : AsyncCommand<BenutzerLoginCommand.Settings>
     }
 }
 
+public class BenutzerLoginTokenCommand : AsyncCommand<BenutzerLoginTokenCommand.Settings>
+{
+    private readonly IIdasAuthService _authService;
+
+    public BenutzerLoginTokenCommand(IIdasAuthService authService)
+    {
+        _authService = authService;
+    }
+
+    public class Settings : GlobalSettings
+    {
+        [CommandOption("--token")]
+        public string? Token { get; set; }
+
+        [CommandOption("--appguid")]
+        public string? AppGuid { get; set; }
+
+        [CommandOption("--env")]
+        public string? Env { get; set; }
+    }
+
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var raw = settings.Token ?? Environment.GetEnvironmentVariable("IDAS_AUTHTOKEN");
+            if (!Guid.TryParse(raw, out var authToken))
+            {
+                AnsiConsole.MarkupLine("[red]Please provide a valid AuthToken via --token or the IDAS_AUTHTOKEN environment variable[/]");
+                return 1;
+            }
+
+            Guid? appGuid = null;
+            if (!string.IsNullOrWhiteSpace(settings.AppGuid))
+            {
+                if (!Guid.TryParse(settings.AppGuid, out var parsedAppGuid))
+                {
+                    AnsiConsole.MarkupLine("[red]Invalid AppGuid provided via --appguid[/]");
+                    return 1;
+                }
+                appGuid = parsedAppGuid;
+            }
+
+            var result = await _authService.LoginWithAuthTokenAsync(authToken, appGuid, settings.Env);
+            if (!result.IsSuccessful)
+            {
+                AnsiConsole.MarkupLine($"[red]{result.ErrorMessage}[/]");
+                return 1;
+            }
+
+            AnsiConsole.MarkupLine("[green]Login via AuthToken successful[/]");
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            return 1;
+        }
+    }
+}
+
 public class BenutzerLogoutCommand : AsyncCommand<GlobalSettings>
 {
     private readonly IIdasAuthService _authService;

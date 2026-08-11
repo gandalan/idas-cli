@@ -38,10 +38,55 @@ public class IdasAuthService(ILogger<IdasAuthService> logger) : IIdasAuthService
         var authResult = await TryAuthenticateWithStoredTokenAsync(settings, appGuid.Value);
         if (authResult.IsSuccessful)
         {
-            return settings;
+            // Exchange the (long-lived) classic AuthToken for a fresh JWT on every run.
+            // Returning an IJwtWebApiConfig makes WebRoutinenBase authenticate via Bearer,
+            // so all commands transparently use the JWT without any further changes.
+            return await settings.ToJwtWebApiSettings();
         }
 
         throw new InvalidOperationException("No valid token found. Run `idas benutzer login` first.");
+    }
+
+    public async Task<AuthResult> LoginWithAuthTokenAsync(Guid authToken, Guid? appGuid = null, string? env = null)
+    {
+        env ??= Environment.GetEnvironmentVariable("IDAS_ENV") ?? "prod";
+        appGuid ??= Guid.Parse(Environment.GetEnvironmentVariable("IDAS_APPGUID") ?? Guid.Empty.ToString());
+
+        if (appGuid == Guid.Empty)
+        {
+            return AuthResult.Failed("Please provide a valid AppGuid via --appguid parameter or IDAS_APPGUID environment variable");
+        }
+
+        if (authToken == Guid.Empty)
+        {
+            return AuthResult.Failed("Please provide a valid AuthToken");
+        }
+
+        await InitializeWebApiConfigurationsAsync(appGuid.Value);
+
+        var settings = WebApiConfigurations.ByName(env);
+        if (settings == null)
+        {
+            return AuthResult.Failed($"Environment '{env}' not found. Available environments: {string.Join(", ", WebApiConfigurations.GetAll().Select(s => s.FriendlyName))}");
+        }
+
+        settings.AppToken = appGuid.Value;
+        settings.AuthToken = new UserAuthTokenDTO { Token = authToken };
+
+        // Validate the classic AuthToken and enrich it (Mandant, MandantGuid, Expires, RefreshToken).
+        var client = new WebRoutinenBase(settings);
+        if (!await client.LoginAsync())
+        {
+            return AuthResult.Failed($"AuthToken validation failed: {client.Status}");
+        }
+
+        settings.AuthToken = client.AuthToken;
+        WebApiConfigurations.Save(settings);
+        await SaveTokenAsync(client.AuthToken);
+
+        logger.LogInformation("Login via AuthToken successful: User={UserName} Mandant={MandantName}, Environment={Environment}",
+            settings.UserName, client.AuthToken?.Mandant?.Name, settings.FriendlyName);
+        return AuthResult.Succeeded();
     }
 
     public async Task LogoutAsync(string? env = null, Guid? appGuid = null)
