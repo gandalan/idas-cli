@@ -2,31 +2,11 @@
 
 Kommandozeilen-Tool für den Zugriff auf IDAS/i3 ERP System.
 
-## Breaking Changes
-
-### v0.3.2
-
-- **Environment Variable Renamed**: `IDAS_APP_TOKEN` → `IDAS_APPGUID`
-- **Environment Values Changed**: 
-  - `dev`, `staging`, `produktiv` → `dev`, `stg`, `prod`
-  - Default changed from `dev` to `prod`
-
-Update your `.env` file:
-```bash
-# Old (v1.x)
-IDAS_APP_TOKEN=your-token
-IDAS_ENV=dev
-
-# New (v0.3.2+)
-IDAS_APPGUID=your-token
-IDAS_ENV=dev  # or stg, prod (default is now prod)
-```
-
 ## Installation
 
 Laden Sie das aktuelle Release herunter und entpacken Sie das Programm in einen beliebigen Ordner. 
 
-Alternativ klonen Sie mit Git das Repository. Zum Build dieses Projektes ist .NET 8 erforderlich.
+Alternativ klonen Sie mit Git das Repository. Zum Build dieses Projektes ist .NET 10 erforderlich.
 
 ```bash
 dotnet build
