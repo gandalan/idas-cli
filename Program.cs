@@ -190,8 +190,13 @@ public class Program
         // Create service collection first
         var services = new ServiceCollection();
         
-        // Add required framework services
-        services.AddLogging(logging =>
+        // Add required framework services.
+        // One LoggerFactory for the whole process, registered as instance: Spectre's registrar builds
+        // its own ServiceProvider from `services` on every RunAsync (also per MCP tool call). With
+        // services.AddLogging(...) each provider would open its own file logger on idas-cli.log - on
+        // Windows the second open fails (sharing violation) and Spectre only reports
+        // "Could not resolve type 'IdasCli.Commands....'".
+        using var loggerFactory = LoggerFactory.Create(logging =>
         {
             // Ensure logs directory exists
             var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
@@ -201,13 +206,13 @@ public class Program
             logging.SetMinimumLevel(LogLevel.Information);
             logging.AddFile(Path.Combine(logDirectory, "idas-cli.log"), append: true);
         });
-        
+        services.AddSingleton(loggerFactory);
+        services.AddLogging();
+
         // Register all IDAS CLI command classes and services
         services.AddIdasCommands(commonParameters);
-        
-        // Build the service provider
-        var serviceProvider = services.BuildServiceProvider();
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        var logger = loggerFactory.CreateLogger<Program>();
 
         try
         {
